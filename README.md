@@ -16,7 +16,7 @@ as a sub-project of the PhD thesis of [Seyed Mohammad Ghaffarian](http://linkedi
 
 ## Why We Developed PROGEX?
 
-There are two key aspects about PROGEX which makes it different and relevant in the presence of other 
+There are key aspects about PROGEX which makes it different and relevant in the presence of other 
 well-known program analysis frameworks (such as [SOOT](https://sable.github.io/soot/), [Chord](http://www.cis.upenn.edu/~mhnaik/chord.html), [Spoon](http://spoon.gforge.inria.fr/), etc.):
  * PROGEX is designed to operate at the source code level (or more precisely, at Abstract Syntax Tree 
    (AST) level); not any other intermediate code or machine code level. To the best of our knowledge, 
