@@ -110,10 +110,13 @@ NOTES:
 ```
 
 
-## Requirements
+## Installation and Requirements
+
+PROGEX is a fully portable tool and requires no installation.
+Just download the latest stable release from our [**releases page**](https://github.com/ghaffarian/progex/releases).
 
 Installing a Java Runtime Environment (JRE, version 8 or newer) is the only requirement for running PROGEX.
-To acquire the latest JRE version visit [java.com](https://java.com/en/download/manual.jsp)
+To acquire the latest JRE version for your platform, visit [java.com](https://java.com/en/download/manual.jsp)
 
 
 ## Visualizing Output Graphs
