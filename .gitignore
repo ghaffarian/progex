@@ -1,0 +1,7 @@
+/archive/
+/dist/
+/test/
+
+/prepare.sh
+
+*.log
