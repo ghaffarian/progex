@@ -2,6 +2,7 @@
 /build/
 /dist/
 /test/
+/nbproject/private/
 
 /prepare.sh
 
