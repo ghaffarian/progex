@@ -17,6 +17,7 @@ public class JavaClass {
 	public final String PACKAGE;
 	public final String EXTENDS;
 	public final String[] IMPORTS;
+	private String typeParameters;
 	private String[] implementations;
 	private ArrayList<JavaField> fields;
 	private ArrayList<JavaMethod> methods;
@@ -30,6 +31,14 @@ public class JavaClass {
 		implementations = null;
 		fields = new ArrayList<>();
 		methods = new ArrayList<>();
+	}
+	
+	public void setTypeParameters(String params){
+		this.typeParameters = params;
+	}
+	
+	public String getTypeParameters(){
+		return this.typeParameters;
 	}
 	
 	public void addField(JavaField field) {

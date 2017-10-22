@@ -3,10 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/java/JavaCFGBuilder.java</file>
-            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/Main.java</file>
-            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/java/JavaCDGBuilder.java</file>
-            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/java/JavaDDGBuilder.java</file>
+            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/java/JavaICFGBuilder.java</file>
+            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/java/JavaMethod.java</file>
+            <file>file:/home/seyed/Netbeans-Projects/Program%20Graph%20Extractor%20(PROGEX)/src/progex/graphs/cfg/CFEdge.java</file>
         </group>
     </open-files>
 </project-private>
