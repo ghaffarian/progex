@@ -664,10 +664,17 @@ public class JavaCDGBuilder {
 				if ((Boolean) followRegion.getProperty("isJump"))
 					++jmpCounter;
 				// connect the follow-region
-				if (Boolean.TRUE.equals(jumpDeps.peek().getProperty("isTry")))
-					cdg.addEdge(jumpDeps.pop(), followRegion, new CDEdge(CDEdge.Type.NOT_THROWS));
-				else
-					cdg.addEdge(jumpDeps.pop(), followRegion, new CDEdge(CDEdge.Type.EPSILON));
+				if (Boolean.TRUE.equals(jumpDeps.peek().getProperty("isTry"))) {
+					PDNode jmpDep = jumpDeps.pop();
+					if (!cdg.containsVertex(jmpDep))
+						cdg.addVertex(jmpDep);
+					cdg.addEdge(jmpDep, followRegion, new CDEdge(CDEdge.Type.NOT_THROWS));
+				} else {
+					PDNode jmpDep = jumpDeps.pop();
+					if (!cdg.containsVertex(jmpDep))
+						cdg.addVertex(jmpDep);
+					cdg.addEdge(jmpDep, followRegion, new CDEdge(CDEdge.Type.EPSILON));
+				}
 				// if the jump-chain is not empty, remove all non-exit jumps
 				if (!jumpDeps.isEmpty()) {
 					for (Iterator<PDNode> itr = jumpDeps.iterator(); itr.hasNext(); ) {
