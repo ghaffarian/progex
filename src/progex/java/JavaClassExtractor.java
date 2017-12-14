@@ -166,7 +166,12 @@ public class JavaClassExtractor {
 			if (impList.size() > 0)
 				implementations = impList.toArray(new String[impList.size()]);
 			String[] imports = importsList.toArray(new String[importsList.size()]);
-			activeClasses.push(new JavaClass(ctx.Identifier().getText(), packageName, extend, filePath, imports));
+			
+			JavaClass cls = new JavaClass(ctx.Identifier().getText(), packageName, extend, filePath, imports);
+			if(ctx.typeParameters() != null)
+				cls.setTypeParameters(ctx.typeParameters().getText().substring(1, ctx.typeParameters().getText().length()-1).trim());
+			activeClasses.push(cls);
+						
 			activeClasses.peek().setInterfaces(implementations);
 			visit(ctx.classBody());
 			javaClasses.add(activeClasses.pop());

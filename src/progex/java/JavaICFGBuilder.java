@@ -1067,59 +1067,90 @@ public class JavaICFGBuilder {
 			contextualProperties.put(currentContext, keys);
 		}
 
-		private JavaClass classInstantiate(JavaClass cls, String generic) {
-			if (generic == null) {
+		private JavaClass classInstantiate(JavaClass cls, String generic){
+			if(generic == null)
 				return cls;
-			} else {
+			else{
 				JavaClass instance = new JavaClass(cls.NAME, cls.PACKAGE, cls.EXTENDS, cls.FILE, cls.IMPORTS);
-				String genericTypes = generic.substring(1, generic.length() - 1).trim();
+				String genericTypes = generic.substring(1, generic.length()-1).trim();
 				instance.setTypeParameters(genericTypes);
 				String params = cls.getTypeParameters();
-				String[] genericType = genericTypes.split(",");
+				//String[] genericType = genericTypes.split(",");
+				String currentGenericType = "";
 				String[] genericParam = params.split(",");
 				HashMap<String, String> genericMap = new HashMap<>();
-				for (int i = 0; i < genericType.length; i++) {
-					genericMap.put(genericParam[i].replace('?', ' ').replaceAll("extends", "").trim(), genericType[i].replace('?', ' ').replaceAll("extends", "").trim());
-					//genericMap.put(genericParam[i].trim(), genericType[i].trim());
-				}
-				for (JavaMethod jm : cls.getAllMethods()) {
-					//instantiate type of arguments for each method
-					String[] args;
-					if (jm.ARG_TYPES != null) {
-						args = new String[jm.ARG_TYPES.length];
-						for (int i = 0; i < jm.ARG_TYPES.length; i++) {
-							if (genericMap.keySet().contains(jm.ARG_TYPES[i])) {
-								args[i] = genericMap.get(jm.ARG_TYPES[i]);
-							} else {
-								args[i] = jm.ARG_TYPES[i];
+				
+				for(int i= 0; i<genericParam.length; i++){
+					//genericMap.put(genericParam[i].replace('?', ' ').replaceAll("extends", "").trim(), genericType[i].replace('?', ' ').replaceAll("extends", "").trim());
+					if(genericTypes.contains(",")){
+						if(genericTypes.contains("<")){
+							int index = genericTypes.indexOf("<");
+							if(genericTypes.indexOf(",") < index){
+								currentGenericType = genericTypes.substring(0, genericTypes.indexOf(","));
+								genericTypes = genericTypes.substring(genericTypes.indexOf(",")+1);
+							}
+							else{
+								index += countSteps(genericTypes.substring(genericTypes.indexOf("<")));							
+								currentGenericType = genericTypes.substring(0, index);
+								if(genericTypes.length() > index)
+									genericTypes = genericTypes.substring(index+1);								
 							}
 						}
-					} else {
+						else{
+							currentGenericType = genericTypes.substring(0, genericTypes.indexOf(","));
+							genericTypes = genericTypes.substring(genericTypes.indexOf(",")+1);
+						}
+					}
+					else
+						currentGenericType = genericTypes;
+					genericMap.put(genericParam[i].replace('?', ' ').replaceAll("extends", "").trim(), currentGenericType.replace('?', ' ').replaceAll("extends", "").trim());
+					//genericMap.put(genericParam[i].trim(), genericType[i].trim());
+				}
+				for(JavaMethod jm: cls.getAllMethods()){
+					//instantiate type of arguments for each method
+					String[] args;
+					if(jm.ARG_TYPES != null){
+						args = new String[jm.ARG_TYPES.length];
+						for(int i=0; i< jm.ARG_TYPES.length; i++){
+							if (genericMap.keySet().contains(jm.ARG_TYPES[i]))
+								args[i] = genericMap.get(jm.ARG_TYPES[i]);
+							else
+								args[i] = jm.ARG_TYPES[i];
+						}
+					}
+					else
 						args = null;
-					}
 					//instantiate return type for each method
-					if (jm.RET_TYPE == null) {
-						instance.addMethod(new JavaMethod(jm.MODIFIER, jm.STATIC, false,
-								jm.RET_TYPE, jm.NAME, args, jm.LINE_OF_CODE));
-					} else if (genericMap.keySet().contains(jm.RET_TYPE)) {
-						instance.addMethod(new JavaMethod(jm.MODIFIER, jm.STATIC, false,
-								genericMap.get(jm.RET_TYPE), jm.NAME, args, jm.LINE_OF_CODE));
-					} else {
-						instance.addMethod(new JavaMethod(jm.MODIFIER, jm.STATIC, false,
-								jm.RET_TYPE, jm.NAME, args, jm.LINE_OF_CODE));
-					}
+					if(jm.RET_TYPE == null)
+						instance.addMethod(new JavaMethod(jm.MODIFIER, jm.STATIC, jm.ABSTRACT, jm.RET_TYPE, jm.NAME, args, jm.LINE_OF_CODE));
+					else if (genericMap.keySet().contains(jm.RET_TYPE))
+						instance.addMethod(new JavaMethod(jm.MODIFIER, jm.STATIC, jm.ABSTRACT, genericMap.get(jm.RET_TYPE), jm.NAME, args, jm.LINE_OF_CODE));
+					else
+						instance.addMethod(new JavaMethod(jm.MODIFIER, jm.STATIC, jm.ABSTRACT, jm.RET_TYPE, jm.NAME, args, jm.LINE_OF_CODE));					
 				}
 				//instantiate class fields
-				for (JavaField jf : cls.getAllFields()) {
-					if (genericMap.keySet().contains(jf.TYPE)) {
+				for(JavaField jf: cls.getAllFields()){
+					if(genericMap.keySet().contains(jf.TYPE))
 						instance.addField(new JavaField(jf.MODIFIER, jf.STATIC, genericMap.get(jf.TYPE), jf.NAME));
-					} else {
+					else
 						instance.addField(jf);
-					}
 				}
 				return instance;
 			}
 		}
+		private int countSteps(String str){
+			int count = 0;
+			for (int i=0; i < str.length(); i++)
+			{
+				if (str.charAt(i) == '<')
+					 count++;
+				else if (str.charAt(i) == '>')
+					count--;
+				if (count == 0)
+					return i+1;
+			}
+			return str.length();
+		}		
 	}
 }
 
