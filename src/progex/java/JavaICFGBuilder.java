@@ -413,7 +413,8 @@ public class JavaICFGBuilder {
 		public String visitReturnStatement(JavaParser.ReturnStatementContext ctx) {
 			// 'return' expression? ';'
 			currentContext = ctx;
-			visit(ctx.expression());
+			if(ctx.expression() != null)
+				visit(ctx.expression());
 			return null;
 		}
 
