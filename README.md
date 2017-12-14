@@ -26,7 +26,7 @@ well-known program analysis frameworks (such as [SOOT](https://sable.github.io/s
    (AST) level); not any other intermediate code or machine code level. To the best of our knowledge, 
    all the above-mentioned frameworks operate at byte-code level. To explain the benefits of analysis 
    at this level, we provide the following quote:
-   
+
    > Control-flow and data-flow analyses are key elements in many static analyses, and useful for a 
    > variety of purposes, e.g. code optimization, refactoring, enforcing coding conventions, bug 
    > detection, and metrics. Often, such analyses are carried out on a normalized intermediate code 
@@ -38,7 +38,7 @@ well-known program analysis frameworks (such as [SOOT](https://sable.github.io/s
    > detection and coding convention violations.
    >
    > -- <cite>[Extensible Intraprocedural Flow Analysis at the Abstract Syntax Tree Level](http://www.sciencedirect.com/science/article/pii/S0167642312000172)</cite>
-   
+
  * PROGEX is not a general-purpose program analysis, transformation, or rewriting framework. In contrast, 
    it is only focused on the task of extracting well-known graphical program representations, and the 
    ability to export them in well-known formats for further analysis by external programs. While all the 
@@ -89,7 +89,7 @@ EXAMPLES:
       This example will extract the CFG of all Java source files in the given path and 
       will export all extracted graphs as DOT files in the current working directory.
 
-   java -jar PROGEX.jar -outdir /home/user/outputs -format json -pdg  C:\program\src
+   java -jar PROGEX.jar -outdir D:\outputs -format json -pdg  C:\program\src
 
       This example will extract the PDGs of all Java source files in the given path and 
       will export all extracted graphs as JSON files in the given output directory.
@@ -141,11 +141,15 @@ And visualize the resulting graph as below:
 
 `xdot graph.dot`
 
+An alternative way is to create an image file. This can be done as follows:
+
+`dot -Tpng -o graph.png graph.dot`
+
 
 #### 2. PROGVIZ
 
 While `xdot` is a fine program and fulfills many basic requirements, it has some limitations.
-PROGVIZ is a related project by the developers of PROGEX, which aims to overcome some of `xdot`'s 
+PROGVIZ is a related project by the developers of PROGEX, which aims to overcome some of xdot's 
 limitations and provide an improved modern graph visualization tool for program analysis applications.
 This tool is still under active development and supports both the DOT and JSON output formats of PROGEX.
 For more information, refer to its dedicated GitHub repository:
