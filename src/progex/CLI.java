@@ -154,7 +154,7 @@ public class CLI {
 			"   java -jar PROGEX.jar -cfg -lang java -format dot  /home/user/project/src\n",
 			"      This example will extract the CFG of all Java source files in the given path and ",
 			"      will export all extracted graphs as DOT files in the current working directory.\n",
-			"   java -jar PROGEX.jar -outdir /home/user/outputs -format json -pdg  C:\\Project\\src\n",
+			"   java -jar PROGEX.jar -outdir D:\\outputs -format json -pdg  C:\\Project\\src\n",
 			"      This example will extract the PDGs of all Java source files in the given path and ",
 			"      will export all extracted graphs as JSON files in the given output directory.\n",
 			"NOTES:\n",
