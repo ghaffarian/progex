@@ -8,7 +8,7 @@ package progex;
  */
 public class Main {
 	
-	public static String VERSION = "2.0-beta1";
+	public static String VERSION = "2.0.0";
 
     /**
      * @param args the command line arguments
