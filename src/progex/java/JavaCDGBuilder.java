@@ -171,7 +171,7 @@ public class JavaCDGBuilder {
 			PDNode expr = new PDNode();
 			expr.setLineOfCode(ctx.getStart().getLine());
 			expr.setCode(getOriginalCodeText(ctx));
-			Logger.log(expr);
+			Logger.log(expr.toString());
 			addNodeEdge(expr);
 			return null;
 		}

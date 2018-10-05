@@ -373,7 +373,7 @@ public class JavaDDGBuilder {
 		
 		private void analyseDefUse(PDNode node, ParseTree expression) {
 			Logger.log("--- ANALYSIS ---");
-			Logger.log(node);
+			Logger.log(node.toString());
 			analysisVisit = true;
 			String expr = visit(expression);
 			Logger.log(expr);
