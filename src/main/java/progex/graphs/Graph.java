@@ -335,7 +335,13 @@ public class Graph<V,E> {
             return false;
         if (this.allVertices.size() > base.allVertices.size() || this.allEdges.size() > base.allEdges.size())
             return false;
-        return base.allVertices.containsAll(this.allVertices) && base.allEdges.containsAll(this.allEdges);
+        if (base.allVertices.containsAll(this.allVertices)) {
+            for (Edge<V,E> edge: this.allEdges)
+                if (!base.containsEdge(edge))
+                    return false;
+            return true;
+        } else
+            return false;
     }
     
     /**
@@ -344,7 +350,7 @@ public class Graph<V,E> {
      * A proper subgraph lacks at least on vertex or edge compared to the base.
      */
     public boolean isProperSubgraphOf(Graph<V,E> base) {
-        if (this.allVertices.size() == base.allVertices.size() || this.allEdges.size() == base.allEdges.size())
+        if (this.allVertices.size() == base.allVertices.size())
             return false;
         return isSubgraphOf(base);
     }
@@ -388,7 +394,7 @@ public class Graph<V,E> {
         return str.toString();
     }
     
-    public String toSingleLineString() {
+    public String toOneLineString() {
         StringBuilder str = new StringBuilder("{ ");
         for (V vrtx: allVertices) {
             str.append(vrtx).append(": [ ");
