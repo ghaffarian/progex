@@ -7,6 +7,7 @@ import java.util.Objects;
  * Edge class for graphs.
  * Contains references for source vertex and target vertex.
  * This class can also contain a label of any type.
+ * Note that this class is immutable.
  * 
  * @author Seyed Mohammad Ghaffarian
  */
@@ -16,10 +17,22 @@ public class Edge<V,E> {
     public final V source;
     public final V target;
     
+    /**
+     * Construct a new edge instance from the given source vertex to the given target vertex.
+     * The label of this edge is also assigned by the given parameter.
+     */
     public Edge(V src, E lbl, V trgt) {
         label = lbl;
         source = src;
         target = trgt;
+    }
+    
+    /**
+     * Returns a reversed version of this edge (swaps the source and target vertices).
+     * This edge instance is not modified; instead a new instance is returned.
+     */
+    public Edge<V,E> reverse() {
+        return new Edge<>(target, label, source);
     }
     
     @Override
