@@ -2,6 +2,7 @@
 package progex;
 
 import javax.swing.JOptionPane;
+import progex.utils.Logger;
 
 /**
  * Graphical User Interface (GUI) of PROGEX.
@@ -16,7 +17,7 @@ public class GUI {
 			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | 
 				 javax.swing.UnsupportedLookAndFeelException ex) {
-			System.err.println("WARNING -- Failed to set Look & Feel! " + ex.toString());
+			Logger.warn("WARNING -- Failed to set Look & Feel! " + ex.toString());
 		}
 	}
 	
