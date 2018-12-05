@@ -6,22 +6,21 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.jgrapht.graph.DefaultDirectedGraph;
+import progex.graphs.Edge;
+import progex.graphs.Graph;
 import progex.utils.StringUtils;
 
 /**
  * Control Dependence Graph.
- * This is based on the DefaultDirectedGraph implementation from JGraphT lib.
- * @see http://jgrapht.org
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class ControlDependenceGraph extends DefaultDirectedGraph<PDNode, CDEdge> {
+public class ControlDependenceGraph extends Graph<PDNode, CDEdge> {
 	
 	public final String FILE_NAME;
 	
 	public ControlDependenceGraph(String javaFileName) {
-		super(CDEdge.class);
+		super(true);
 		FILE_NAME = javaFileName;
 	}
 	
@@ -52,7 +51,7 @@ public class ControlDependenceGraph extends DefaultDirectedGraph<PDNode, CDEdge>
 			json.println("\n\n  \"nodes\": [");
 			Map<PDNode, String> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 1;
-			for (PDNode node: vertexSet()) {
+			for (PDNode node: allVertices) {
 				json.println("    {");
 				String id = "n" + nodeCounter++;
 				nodeIDs.put(node, id);
@@ -63,15 +62,15 @@ public class ControlDependenceGraph extends DefaultDirectedGraph<PDNode, CDEdge>
 			}
 			json.println("  ],\n\n\n  \"edges\": [");
 			int edgeCounter = 1;
-			for (CDEdge edge: edgeSet()) {
+			for (Edge<PDNode, CDEdge> edge: allEdges) {
 				json.println("    {");
 				String id = "e" + edgeCounter++;
 				json.println("      \"id\": \"" + id + "\",");
-				String src = nodeIDs.get(getEdgeSource(edge));
+				String src = nodeIDs.get(edge.source);
 				json.println("      \"source\": \"" + src + "\",");
-				String trgt = nodeIDs.get(getEdgeTarget(edge));
+				String trgt = nodeIDs.get(edge.target);
 				json.println("      \"target\": \"" + trgt + "\",");
-				json.println("      \"label\": \"" + edge.type.label + "\"");
+				json.println("      \"label\": \"" + edge.label.type + "\"");
 				json.println("    },");
 			}
 			json.println("  ]\n}");
@@ -90,28 +89,29 @@ public class ControlDependenceGraph extends DefaultDirectedGraph<PDNode, CDEdge>
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-CTRL.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + " {\n");
+			dot.println("digraph " + filename + "_PDG_CTRL {\n");
+            dot.println("  // graph-vertices");
 			Map<PDNode, String> nodeNames = new LinkedHashMap<>();
 			int nodeCounter = 1;
-			for (PDNode node: vertexSet()) {
-				String name = "n" + nodeCounter++;
+			for (PDNode node: allVertices) {
+				String name = "v" + nodeCounter++;
 				nodeNames.put(node, name);
-				StringBuilder label = new StringBuilder("   [label=\"");
+				StringBuilder label = new StringBuilder("  [label=\"");
 				if (node.getLineOfCode() > 0)
 					label.append(node.getLineOfCode()).append(":  ");
 				label.append(StringUtils.escape(node.getCode())).append("\"];");
-				dot.println("   " + name + label.toString());
+				dot.println("  " + name + label.toString());
 			}
-			dot.println();
-			for (CDEdge edge: edgeSet()) {
-				String src = nodeNames.get(getEdgeSource(edge));
-				String trg = nodeNames.get(getEdgeTarget(edge));
-				if (edge.type.equals(CDEdge.Type.EPSILON))
-					dot.println("   " + src + " -> " + trg + ";");
+			dot.println("  // graph-edges");
+			for (Edge<PDNode, CDEdge> edge: allEdges) {
+				String src = nodeNames.get(edge.source);
+				String trg = nodeNames.get(edge.target);
+				if (edge.label.type.equals(CDEdge.Type.EPSILON))
+					dot.println("  " + src + " -> " + trg + ";");
 				else
-					dot.println("   " + src + " -> " + trg + "   [label=\"" + edge.type + "\"];");
+					dot.println("  " + src + " -> " + trg + "  [label=\"" + edge.label.type + "\"];");
 			}
-			dot.println("\n}");
+			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
 			System.err.println(ex);
 		}

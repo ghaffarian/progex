@@ -1,20 +1,21 @@
 /*** In The Name of Allah ***/
 package progex.graphs.ast;
 
-import org.jgrapht.graph.SimpleDirectedGraph;
+import progex.graphs.Graph;
 
 /**
- * Control Flow Graph (CFG).
- * This is based on the DirectedPseudograph implementation from JGraphT lib.
- * @see http://jgrapht.org
+ * Abstract Syntax Tree (AST).
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class AbstractSyntaxTree extends SimpleDirectedGraph<ASNode, ASEdge> {
+public class AbstractSyntaxTree extends Graph<ASNode, ASEdge> {
 	
 	public AbstractSyntaxTree() {
-		super(ASEdge.class);
+		super(true);
 	}
-	
+    
+    public AbstractSyntaxTree(AbstractSyntaxTree ast) {
+        super(ast);
+    }
 	
 }

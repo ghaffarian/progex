@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
+import progex.graphs.Edge;
 import progex.graphs.pdg.CDEdge;
 import progex.graphs.pdg.ControlDependenceGraph;
 import progex.graphs.pdg.PDNode;
@@ -108,7 +109,7 @@ public class JavaCDGBuilder {
 				exit.setLineOfCode(0);
 				exit.setCode("exit");
 				cdg.addVertex(exit);
-				cdg.addEdge(block, exit, new CDEdge(CDEdge.Type.EPSILON));
+				cdg.addEdge(new Edge<>(block, new CDEdge(CDEdge.Type.EPSILON), exit));
 				return null;
 			} else
 				return visitChildren(ctx);
@@ -131,7 +132,7 @@ public class JavaCDGBuilder {
 			exit.setLineOfCode(0);
 			exit.setCode("exit");
 			cdg.addVertex(exit);
-			cdg.addEdge(entry, exit, new CDEdge(CDEdge.Type.EPSILON));
+			cdg.addEdge(new Edge<>(entry, new CDEdge(CDEdge.Type.EPSILON), exit));
 			return null;
 		}
 
@@ -161,7 +162,7 @@ public class JavaCDGBuilder {
 			exit.setLineOfCode(0);
 			exit.setCode("exit");
 			cdg.addVertex(exit);
-			cdg.addEdge(entry, exit, new CDEdge(CDEdge.Type.EPSILON));
+			cdg.addEdge(new Edge<>(entry, new CDEdge(CDEdge.Type.EPSILON), exit));
 			return null;
 		}
 
@@ -198,7 +199,7 @@ public class JavaCDGBuilder {
 			thenRegion.setLineOfCode(0);
 			thenRegion.setCode("THEN");
 			cdg.addVertex(thenRegion);
-			cdg.addEdge(ifNode, thenRegion, new CDEdge(CDEdge.Type.TRUE));
+			cdg.addEdge(new Edge<>(ifNode, new CDEdge(CDEdge.Type.TRUE), thenRegion));
 			//
 			PDNode elseRegion = new PDNode();
 			elseRegion.setLineOfCode(0);
@@ -213,7 +214,7 @@ public class JavaCDGBuilder {
 			if (ctx.statement().size() > 1) { // if with else
 				follows = false;
 				cdg.addVertex(elseRegion);
-				cdg.addEdge(ifNode, elseRegion, new CDEdge(CDEdge.Type.FALSE));
+				cdg.addEdge(new Edge<>(ifNode, new CDEdge(CDEdge.Type.FALSE), elseRegion));
 				//
 				pushCtrlDep(elseRegion);
 				negDeps.push(thenRegion);
@@ -223,7 +224,7 @@ public class JavaCDGBuilder {
 			} else if (buildRegion) {
 				// there is no else, but we need to add the ELSE region
 				cdg.addVertex(elseRegion);
-				cdg.addEdge(ifNode, elseRegion, new CDEdge(CDEdge.Type.FALSE));
+				cdg.addEdge(new Edge<>(ifNode, new CDEdge(CDEdge.Type.FALSE), elseRegion));
 			}
 			follows = true;
 			return null;
@@ -246,7 +247,7 @@ public class JavaCDGBuilder {
 				loopRegion.setLineOfCode(0);
 				loopRegion.setCode("LOOP");
 				cdg.addVertex(loopRegion);
-				cdg.addEdge(forExpr, loopRegion, new CDEdge(CDEdge.Type.TRUE));
+				cdg.addEdge(new Edge<>(forExpr, new CDEdge(CDEdge.Type.TRUE), loopRegion));
 				//
 				pushLoopBlockDep(loopRegion);
 				visit(ctx.statement());
@@ -280,7 +281,7 @@ public class JavaCDGBuilder {
 				loopRegion.setLineOfCode(0);
 				loopRegion.setCode("LOOP");
 				cdg.addVertex(loopRegion);
-				cdg.addEdge(forExpr, loopRegion, new CDEdge(CDEdge.Type.TRUE));
+				cdg.addEdge(new Edge<>(forExpr, new CDEdge(CDEdge.Type.TRUE), loopRegion));
 				//
 				pushLoopBlockDep(loopRegion);
 				visit(ctx.statement());
@@ -291,7 +292,7 @@ public class JavaCDGBuilder {
 					// we don't use 'addNodeEdge(forUpdate)' because the behavior of for-update
 					// step is different from other statements with regards to break/continue.
 					cdg.addVertex(forUpdate);
-					cdg.addEdge(ctrlDeps.peek(), forUpdate, new CDEdge(CDEdge.Type.EPSILON));
+					cdg.addEdge(new Edge<>(ctrlDeps.peek(), new CDEdge(CDEdge.Type.EPSILON), forUpdate));
 				}
 				popLoopBlockDep(loopRegion);
 			}
@@ -310,7 +311,7 @@ public class JavaCDGBuilder {
 			loopRegion.setLineOfCode(0);
 			loopRegion.setCode("LOOP");
 			cdg.addVertex(loopRegion);
-			cdg.addEdge(whileNode, loopRegion, new CDEdge(CDEdge.Type.TRUE));
+			cdg.addEdge(new Edge<>(whileNode, new CDEdge(CDEdge.Type.TRUE), loopRegion));
 			//
 			pushLoopBlockDep(loopRegion);
 			visit(ctx.statement());
@@ -388,7 +389,7 @@ public class JavaCDGBuilder {
 					thenRegion.setLineOfCode(0);
 					thenRegion.setCode("THEN");
 					cdg.addVertex(thenRegion);
-					cdg.addEdge(lastCase, thenRegion, new CDEdge(CDEdge.Type.TRUE));
+					cdg.addEdge(new Edge<>(lastCase, new CDEdge(CDEdge.Type.TRUE), thenRegion));
 				}
 				//
 				for (JavaParser.SwitchLabelContext ctx : cases.subList(1, cases.size())) {
@@ -396,8 +397,8 @@ public class JavaCDGBuilder {
 					nextCase.setLineOfCode(ctx.getStart().getLine());
 					nextCase.setCode(getOriginalCodeText(ctx));
 					cdg.addVertex(nextCase);
-					cdg.addEdge(lastCase, nextCase, new CDEdge(CDEdge.Type.FALSE));
-					cdg.addEdge(nextCase, thenRegion, new CDEdge(CDEdge.Type.TRUE));
+					cdg.addEdge(new Edge<>(lastCase, new CDEdge(CDEdge.Type.FALSE), nextCase));
+					cdg.addEdge(new Edge<>(nextCase, new CDEdge(CDEdge.Type.TRUE), thenRegion));
 					lastCase = nextCase;
 				}
 				//
@@ -416,8 +417,8 @@ public class JavaCDGBuilder {
 					//
 					if (buildRegion) {
 						// there was a 'break', so we need to keep the ELSE region
-						cdg.addEdge(lastCase, elseRegion, new CDEdge(CDEdge.Type.FALSE));
-					} else if (cdg.outDegreeOf(elseRegion) == 0)
+						cdg.addEdge(new Edge<>(lastCase, new CDEdge(CDEdge.Type.FALSE), elseRegion));
+					} else if (cdg.getOutDegree(elseRegion) == 0)
 						// the ELSE region is not needed, so we remove it
 						cdg.removeVertex(elseRegion);
 				}
@@ -556,7 +557,7 @@ public class JavaCDGBuilder {
 					catchNode.setLineOfCode(cx.getStart().getLine());
 					catchNode.setCode("catch (" + cx.catchType().getText() + " " + cx.Identifier().getText() + ")");
 					cdg.addVertex(catchNode);
-					cdg.addEdge(tryRegion, catchNode, new CDEdge(CDEdge.Type.THROWS));
+					cdg.addEdge(new Edge<>(tryRegion, new CDEdge(CDEdge.Type.THROWS), catchNode));
 					pushCtrlDep(catchNode);
 					visit(cx.block());
 					popCtrlDep(catchNode);
@@ -611,7 +612,7 @@ public class JavaCDGBuilder {
 					catchNode.setLineOfCode(cx.getStart().getLine());
 					catchNode.setCode("catch (" + cx.catchType().getText() + " " + cx.Identifier().getText() + ")");
 					cdg.addVertex(catchNode);
-					cdg.addEdge(tryRegion, catchNode, new CDEdge(CDEdge.Type.THROWS));
+					cdg.addEdge(new Edge<>(tryRegion, new CDEdge(CDEdge.Type.THROWS), catchNode));
 					pushCtrlDep(catchNode);
 					visit(cx.block());
 					popCtrlDep(catchNode);
@@ -641,7 +642,7 @@ public class JavaCDGBuilder {
 		private void addNodeEdge(PDNode node) {
 			checkBuildFollowRegion();
 			cdg.addVertex(node);
-			cdg.addEdge(ctrlDeps.peek(), node, new CDEdge(CDEdge.Type.EPSILON));
+			cdg.addEdge(new Edge<>(ctrlDeps.peek(), new CDEdge(CDEdge.Type.EPSILON), node));
 		}
 
 		/**
@@ -668,12 +669,12 @@ public class JavaCDGBuilder {
 					PDNode jmpDep = jumpDeps.pop();
 					if (!cdg.containsVertex(jmpDep))
 						cdg.addVertex(jmpDep);
-					cdg.addEdge(jmpDep, followRegion, new CDEdge(CDEdge.Type.NOT_THROWS));
+					cdg.addEdge(new Edge<>(jmpDep, new CDEdge(CDEdge.Type.NOT_THROWS), followRegion));
 				} else {
 					PDNode jmpDep = jumpDeps.pop();
 					if (!cdg.containsVertex(jmpDep))
 						cdg.addVertex(jmpDep);
-					cdg.addEdge(jmpDep, followRegion, new CDEdge(CDEdge.Type.EPSILON));
+					cdg.addEdge(new Edge<>(jmpDep, new CDEdge(CDEdge.Type.EPSILON), followRegion));
 				}
 				// if the jump-chain is not empty, remove all non-exit jumps
 				if (!jumpDeps.isEmpty()) {

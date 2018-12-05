@@ -1,7 +1,6 @@
 /*** In The Name of Allah ***/
 package progex.graphs.cfg;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -9,25 +8,23 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.jgrapht.graph.DirectedPseudograph;
+import progex.graphs.Edge;
+import progex.graphs.Graph;
 import progex.utils.StringUtils;
 
 /**
  * Control Flow Graph (CFG).
- * This is based on the DirectedPseudograph implementation from JGraphT lib.
- * @see http://jgrapht.org
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class ControlFlowGraph extends DirectedPseudograph<CFNode, CFEdge> {
+public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
 	
 	private String pkgName;
 	public final String FILE_NAME;
 	private List<CFNode> methodEntries;
 
 	public ControlFlowGraph(String name) {
-		super(CFEdge.class);
+		super(true);
 		pkgName = "";
 		this.FILE_NAME = name;
 		methodEntries = new ArrayList<>();
@@ -76,7 +73,7 @@ public class ControlFlowGraph extends DirectedPseudograph<CFNode, CFEdge> {
 			json.println("\n\n  \"nodes\": [");
 			Map<CFNode, String> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 1;
-			for (CFNode node: vertexSet()) {
+			for (CFNode node: allVertices) {
 				json.println("    {");
 				String id = "n" + nodeCounter++;
 				nodeIDs.put(node, id);
@@ -87,15 +84,15 @@ public class ControlFlowGraph extends DirectedPseudograph<CFNode, CFEdge> {
 			}
 			json.println("  ],\n\n\n  \"edges\": [");
 			int edgeCounter = 1;
-			for (CFEdge edge: edgeSet()) {
+			for (Edge<CFNode, CFEdge> edge: allEdges) {
 				json.println("    {");
 				String id = "e" + edgeCounter++;
 				json.println("      \"id\": \"" + id + "\",");
-				String src = nodeIDs.get(getEdgeSource(edge));
+				String src = nodeIDs.get(edge.source);
 				json.println("      \"source\": \"" + src + "\",");
-				String trgt = nodeIDs.get(getEdgeTarget(edge));
+				String trgt = nodeIDs.get(edge.target);
 				json.println("      \"target\": \"" + trgt + "\",");
-				json.println("      \"label\": \"" + edge.type.label + "\"");
+				json.println("      \"label\": \"" + edge.label.type + "\"");
 				json.println("    },");
 			}
 			json.println("  ]\n}");
@@ -114,28 +111,29 @@ public class ControlFlowGraph extends DirectedPseudograph<CFNode, CFEdge> {
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + " {\n");
+			dot.println("digraph " + filename + "_CFG {\n");
+            dot.println("  // graph-vertices");
 			Map<CFNode, String> nodeNames = new LinkedHashMap<>();
 			int nodeCounter = 1;
-			for (CFNode node: vertexSet()) {
-				String name = "n" + nodeCounter++;
+			for (CFNode node: allVertices) {
+				String name = "v" + nodeCounter++;
 				nodeNames.put(node, name);
-				StringBuilder label = new StringBuilder("   [label=\"");
+				StringBuilder label = new StringBuilder("  [label=\"");
 				if (node.getLineOfCode() > 0)
 					label.append(node.getLineOfCode()).append(":  ");
 				label.append(StringUtils.escape(node.getCode())).append("\"];");
-				dot.println("   " + name + label.toString());
+				dot.println("  " + name + label.toString());
 			}
-			dot.println();
-			for (CFEdge edge: edgeSet()) {
-				String src = nodeNames.get(getEdgeSource(edge));
-				String trg = nodeNames.get(getEdgeTarget(edge));
-				if (edge.type.equals(CFEdge.Type.EPSILON))
-					dot.println("   " + src + " -> " + trg + ";");
+			dot.println("  // graph-edges");
+			for (Edge<CFNode, CFEdge> edge: allEdges) {
+				String src = nodeNames.get(edge.source);
+				String trg = nodeNames.get(edge.target);
+				if (edge.label.type.equals(CFEdge.Type.EPSILON))
+					dot.println("  " + src + " -> " + trg + ";");
 				else
-					dot.println("   " + src + " -> " + trg + "   [label=\"" + edge.type + "\"];");
+					dot.println("  " + src + " -> " + trg + "  [label=\"" + edge.label.type + "\"];");
 			}
-			dot.println("\n}");
+			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
 			System.err.println(ex);
 		}

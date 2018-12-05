@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
+import progex.graphs.Edge;
 import progex.graphs.cfg.CFEdge;
 import progex.graphs.cfg.CFNode;
 import progex.graphs.cfg.ControlFlowGraph;
@@ -280,7 +281,7 @@ public class JavaCFGBuilder {
 			addNodeAndPreEdge(endif);
 			//
 			if (ctx.statement().size() == 1) { // if without else
-				cfg.addEdge(ifNode, endif, new CFEdge(CFEdge.Type.FALSE));			
+				cfg.addEdge(new Edge<>(ifNode, new CFEdge(CFEdge.Type.FALSE), endif));
 			} else {  //  if with else
 				preEdges.push(CFEdge.Type.FALSE);
 				preNodes.push(ifNode);
@@ -310,7 +311,7 @@ public class JavaCFGBuilder {
 				forEnd.setLineOfCode(0);
 				forEnd.setCode("endfor");
 				cfg.addVertex(forEnd);
-				cfg.addEdge(forExpr, forEnd, new CFEdge(CFEdge.Type.FALSE));
+				cfg.addEdge(new Edge<>(forExpr, new CFEdge(CFEdge.Type.FALSE), forEnd));
 				//
 				preEdges.push(CFEdge.Type.TRUE);
 				preNodes.push(forExpr);
@@ -345,7 +346,7 @@ public class JavaCFGBuilder {
 				addContextualProperty(forExpr, ctx.forControl().expression());
 				cfg.addVertex(forExpr);
 				if (forInit != null)
-					cfg.addEdge(forInit, forExpr, new CFEdge(CFEdge.Type.EPSILON));
+					cfg.addEdge(new Edge<>(forInit, new CFEdge(CFEdge.Type.EPSILON), forExpr));
 				else
 					popAddPreEdgeTo(forExpr);
 				// for-update
@@ -364,7 +365,7 @@ public class JavaCFGBuilder {
 				forEnd.setLineOfCode(0);
 				forEnd.setCode("endfor");
 				cfg.addVertex(forEnd);
-				cfg.addEdge(forExpr, forEnd, new CFEdge(CFEdge.Type.FALSE));
+				cfg.addEdge(new Edge<>(forExpr, new CFEdge(CFEdge.Type.FALSE), forEnd));
 				//
 				preEdges.push(CFEdge.Type.TRUE);
 				preNodes.push(forExpr);
@@ -372,7 +373,7 @@ public class JavaCFGBuilder {
 				visit(ctx.statement());
 				loopBlocks.pop();
 				popAddPreEdgeTo(forUpdate);
-				cfg.addEdge(forUpdate, forExpr, new CFEdge(CFEdge.Type.EPSILON));
+				cfg.addEdge(new Edge<>(forUpdate, new CFEdge(CFEdge.Type.EPSILON), forExpr));
 				//
 				preEdges.push(CFEdge.Type.EPSILON);
 				preNodes.push(forEnd);
@@ -393,7 +394,7 @@ public class JavaCFGBuilder {
 			endwhile.setLineOfCode(0);
 			endwhile.setCode("endwhile");
 			cfg.addVertex(endwhile);
-			cfg.addEdge(whileNode, endwhile, new CFEdge(CFEdge.Type.FALSE));
+			cfg.addEdge(new Edge<>(whileNode, new CFEdge(CFEdge.Type.FALSE), endwhile));
 			//
 			preEdges.push(CFEdge.Type.TRUE);
 			preNodes.push(whileNode);
@@ -432,8 +433,8 @@ public class JavaCFGBuilder {
 			visit(ctx.statement());
 			loopBlocks.pop();
 			popAddPreEdgeTo(whileNode);
-			cfg.addEdge(whileNode, doNode, new CFEdge(CFEdge.Type.TRUE));
-			cfg.addEdge(whileNode, doWhileEnd, new CFEdge(CFEdge.Type.FALSE));
+			cfg.addEdge(new Edge<>(whileNode, new CFEdge(CFEdge.Type.TRUE), doNode));
+			cfg.addEdge(new Edge<>(whileNode, new CFEdge(CFEdge.Type.FALSE), doWhileEnd));
 			//
 			preEdges.push(CFEdge.Type.EPSILON);
 			preNodes.push(doWhileEnd);
@@ -469,7 +470,7 @@ public class JavaCFGBuilder {
 			loopBlocks.pop();
 			popAddPreEdgeTo(endSwitch);
 			if (preCase != null)
-				cfg.addEdge(preCase, endSwitch, new CFEdge(CFEdge.Type.FALSE));
+				cfg.addEdge(new Edge<>(preCase, new CFEdge(CFEdge.Type.FALSE), endSwitch));
 			//
 			preEdges.push(CFEdge.Type.EPSILON);
 			preNodes.push(endSwitch);
@@ -487,9 +488,9 @@ public class JavaCFGBuilder {
 				if (dontPop)
 					dontPop = false;
 				else
-					cfg.addEdge(preNodes.pop(), caseStmnt, new CFEdge(preEdges.pop()));
+					cfg.addEdge(new Edge<>(preNodes.pop(), new CFEdge(preEdges.pop()), caseStmnt));
 				if (preCase != null)
-					cfg.addEdge(preCase, caseStmnt, new CFEdge(CFEdge.Type.FALSE));
+					cfg.addEdge(new Edge<>(preCase, new CFEdge(CFEdge.Type.FALSE), caseStmnt));
 				if (ctx.getStart().getText().equals("default")) {
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(caseStmnt);
@@ -558,14 +559,14 @@ public class JavaCFGBuilder {
 				// a label is specified
 				for (Block block: labeledBlocks) {
 					if (block.label.equals(ctx.Identifier().getText())) {
-						cfg.addEdge(breakNode, block.end, new CFEdge(CFEdge.Type.EPSILON));
+						cfg.addEdge(new Edge<>(breakNode, new CFEdge(CFEdge.Type.EPSILON), block.end));
 						break;
 					}
 				}
 			} else {
 				// no label
 				Block block = loopBlocks.peek();
-				cfg.addEdge(breakNode, block.end, new CFEdge(CFEdge.Type.EPSILON));
+				cfg.addEdge(new Edge<>(breakNode, new CFEdge(CFEdge.Type.EPSILON), block.end));
 			}
 			dontPop = true;
 			return null;
@@ -586,14 +587,14 @@ public class JavaCFGBuilder {
 				// a label is specified
 				for (Block block: labeledBlocks) {
 					if (block.label.equals(ctx.Identifier().getText())) {
-						cfg.addEdge(continueNode, block.start, new CFEdge(CFEdge.Type.EPSILON));
+						cfg.addEdge(new Edge<>(continueNode, new CFEdge(CFEdge.Type.EPSILON), block.start));
 						break;
 					}
 				}
 			} else {  
 				// no label
 				Block block = loopBlocks.peek();
-				cfg.addEdge(continueNode, block.start, new CFEdge(CFEdge.Type.EPSILON));
+				cfg.addEdge(new Edge<>(continueNode, new CFEdge(CFEdge.Type.EPSILON), block.start));
 			}
 			dontPop = true;
 			return null;
@@ -652,7 +653,7 @@ public class JavaCFGBuilder {
 				finallyNode.setCode("finally");
 				addContextualProperty(finallyNode, ctx.finallyBlock());
 				cfg.addVertex(finallyNode);
-				cfg.addEdge(endTry, finallyNode, new CFEdge(CFEdge.Type.EPSILON));
+				cfg.addEdge(new Edge<>(endTry, new CFEdge(CFEdge.Type.EPSILON), finallyNode));
 				//
 				preEdges.push(CFEdge.Type.EPSILON);
 				preNodes.push(finallyNode);
@@ -679,7 +680,7 @@ public class JavaCFGBuilder {
 					catchNode.setCode("catch (" + cx.catchType().getText() + " " + cx.Identifier().getText() + ")");
 					addContextualProperty(catchNode, cx);
 					cfg.addVertex(catchNode);
-					cfg.addEdge(endTry, catchNode, new CFEdge(CFEdge.Type.THROWS));
+					cfg.addEdge(new Edge<>(endTry, new CFEdge(CFEdge.Type.THROWS), catchNode));
 					//
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(catchNode);
@@ -689,13 +690,13 @@ public class JavaCFGBuilder {
 				if (finallyNode != null) {
 					// connect end-catch node to finally-node,
 					// and push end-finally to the stack ...
-					cfg.addEdge(endCatch, finallyNode, new CFEdge(CFEdge.Type.EPSILON));
+					cfg.addEdge(new Edge<>(endCatch, new CFEdge(CFEdge.Type.EPSILON), finallyNode));
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(endFinally);
 				} else {
 					// connect end-catch node to end-try,
 					// and push end-try to the the stack ...
-					cfg.addEdge(endCatch, endTry, new CFEdge(CFEdge.Type.EPSILON));
+					cfg.addEdge(new Edge<>(endCatch, new CFEdge(CFEdge.Type.EPSILON), endTry));
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(endTry);
 				}
@@ -755,7 +756,7 @@ public class JavaCFGBuilder {
 				finallyNode.setCode("finally");
 				addContextualProperty(finallyNode, ctx.finallyBlock());
 				cfg.addVertex(finallyNode);
-				cfg.addEdge(endTry, finallyNode, new CFEdge(CFEdge.Type.EPSILON));
+				cfg.addEdge(new Edge<>(endTry, new CFEdge(CFEdge.Type.EPSILON), finallyNode));
 				//
 				preEdges.push(CFEdge.Type.EPSILON);
 				preNodes.push(finallyNode);
@@ -782,7 +783,7 @@ public class JavaCFGBuilder {
 					catchNode.setCode("catch (" + cx.catchType().getText() + " " + cx.Identifier().getText() + ")");
 					addContextualProperty(catchNode, cx);
 					cfg.addVertex(catchNode);
-					cfg.addEdge(endTry, catchNode, new CFEdge(CFEdge.Type.THROWS));
+					cfg.addEdge(new Edge<>(endTry, new CFEdge(CFEdge.Type.THROWS), catchNode));
 					//
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(catchNode);
@@ -792,13 +793,13 @@ public class JavaCFGBuilder {
 				if (finallyNode != null) {
 					// connect end-catch node to finally-node,
 					// and push end-finally to the stack ...
-					cfg.addEdge(endCatch, finallyNode, new CFEdge(CFEdge.Type.EPSILON));
+					cfg.addEdge(new Edge<>(endCatch, new CFEdge(CFEdge.Type.EPSILON), finallyNode));
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(endFinally);
 				} else {
 					// connect end-catch node to end-try,
 					// and push end-try to the the stack ...
-					cfg.addEdge(endCatch, endTry, new CFEdge(CFEdge.Type.EPSILON));
+					cfg.addEdge(new Edge<>(endCatch, new CFEdge(CFEdge.Type.EPSILON), endTry));
 					preEdges.push(CFEdge.Type.EPSILON);
 					preNodes.push(endTry);
 				}
@@ -827,7 +828,7 @@ public class JavaCFGBuilder {
 			//
 			if (!tryBlocks.isEmpty()) {
 				Block tryBlock = tryBlocks.peek();
-				cfg.addEdge(throwNode, tryBlock.end, new CFEdge(CFEdge.Type.THROWS));
+				cfg.addEdge(new Edge<>(throwNode, new CFEdge(CFEdge.Type.THROWS), tryBlock.end));
 			} else {
 				// do something when it's a throw not in a try-catch block ...
 				// in such a situation, the method declaration has a throws clause;
@@ -862,11 +863,11 @@ public class JavaCFGBuilder {
 			else {
 //				System.out.println("\nPRE-NODES = " + preNodes.size());
 //				System.out.println("PRE-EDGES = " + preEdges.size() + '\n');
-				cfg.addEdge(preNodes.pop(), node, new CFEdge(preEdges.pop()));
+				cfg.addEdge(new Edge<>(preNodes.pop(), new CFEdge(preEdges.pop()), node));
 			}
 			//
 			for (int i = casesQueue.size(); i > 0; --i)
-				cfg.addEdge(casesQueue.remove(), node, new CFEdge(CFEdge.Type.TRUE));
+				cfg.addEdge(new Edge<>(casesQueue.remove(), new CFEdge(CFEdge.Type.TRUE), node));
 		}
 
 		/**

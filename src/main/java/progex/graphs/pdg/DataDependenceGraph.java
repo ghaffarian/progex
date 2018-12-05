@@ -6,9 +6,11 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import org.jgrapht.graph.DirectedPseudograph;
+import progex.graphs.Edge;
+import progex.graphs.Graph;
 import progex.graphs.cfg.CFEdge;
 import progex.graphs.cfg.CFNode;
 import progex.graphs.cfg.ControlFlowGraph;
@@ -16,18 +18,16 @@ import progex.utils.StringUtils;
 
 /**
  * Data Dependence Graph.
- * This is based on the DirectedPseudograph implementation from JGraphT lib.
- * @see http://jgrapht.org
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class DataDependenceGraph extends DirectedPseudograph<PDNode, DDEdge> {
+public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 	
 	public final String FILE_NAME;
 	private ControlFlowGraph cfg;
 	
 	public DataDependenceGraph(String javaFileName) {
-		super(DDEdge.class);
+		super(true);
 		FILE_NAME = javaFileName;
 		cfg = null;
 	}
@@ -41,7 +41,7 @@ public class DataDependenceGraph extends DirectedPseudograph<PDNode, DDEdge> {
 	}
 	
 	public void printAllNodesUseDefs(PrintStream out) {
-		for (PDNode node: vertexSet()) {
+		for (PDNode node: allVertices) {
 			out.println(node);
 			out.println("  + USEs: " + Arrays.toString(node.getAllUSEs()));
 			out.println("  + DEFs: " + Arrays.toString(node.getAllDEFs()) + "\n");
@@ -76,7 +76,9 @@ public class DataDependenceGraph extends DirectedPseudograph<PDNode, DDEdge> {
 			int nodeCounter = 1;
 			Map<CFNode, String> ctrlNodes = new HashMap<>();
 			Map<PDNode, String> dataNodes = new HashMap<>();
-			for (CFNode node: cfg.vertexSet()) {
+            Enumeration<CFNode> cfNodes = cfg.enumerateAllVertices();
+			while (cfNodes.hasMoreElements()) {
+                CFNode node = cfNodes.nextElement();
 				String id = "n" + nodeCounter++;
 				ctrlNodes.put(node, id);
 				json.println("    {");
@@ -93,28 +95,30 @@ public class DataDependenceGraph extends DirectedPseudograph<PDNode, DDEdge> {
 			}
 			json.println("  ],\n\n\n  \"edges\": [");
 			int edgeCounter = 1;
-			for (CFEdge ctrlEdge: cfg.edgeSet()) {
+            Enumeration<Edge<CFNode, CFEdge>> cfEdges = cfg.enumerateAllEdges();
+			while (cfEdges.hasMoreElements()) {
+                Edge<CFNode, CFEdge> ctrlEdge = cfEdges.nextElement();
 				json.println("    {");
 				String id = "e" + edgeCounter++;
 				json.println("      \"id\": \"" + id + "\",");
-				String src = ctrlNodes.get(cfg.getEdgeSource(ctrlEdge));
+				String src = ctrlNodes.get(ctrlEdge.source);
 				json.println("      \"source\": \"" + src + "\",");
-				String trgt = ctrlNodes.get(cfg.getEdgeTarget(ctrlEdge));
+				String trgt = ctrlNodes.get(ctrlEdge.target);
 				json.println("      \"target\": \"" + trgt + "\",");
 				json.println("      \"type\": \"Control\",");
-				json.println("      \"label\": \"" + ctrlEdge.type.label + "\"");
+				json.println("      \"label\": \"" + ctrlEdge.label.type + "\"");
 				json.println("    },");
 			}
-			for (DDEdge dataEdge: edgeSet()) {
+			for (Edge<PDNode, DDEdge> dataEdge: allEdges) {
 				json.println("    {");
 				String id = "e" + edgeCounter++;
 				json.println("      \"id\": \"" + id + "\",");
-				String src = dataNodes.get(getEdgeSource(dataEdge));
+				String src = dataNodes.get(dataEdge.source);
 				json.println("      \"source\": \"" + src + "\",");
-				String trgt = dataNodes.get(getEdgeTarget(dataEdge));
+				String trgt = dataNodes.get(dataEdge.target);
 				json.println("      \"target\": \"" + trgt + "\",");
-				json.println("      \"type\": \"" + dataEdge.type + "\",");
-				json.println("      \"label\": \"" + dataEdge.var + "\"");
+				json.println("      \"type\": \"" + dataEdge.label.type + "\",");
+				json.println("      \"label\": \"" + dataEdge.label.var + "\"");
 				json.println("    },");
 			}
 			json.println("  ]\n}");
@@ -133,37 +137,43 @@ public class DataDependenceGraph extends DirectedPseudograph<PDNode, DDEdge> {
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-DATA.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + " {\n");
+			dot.println("digraph " + filename + "_PDG_DATA {\n");
+            dot.println("  // graph-vertices");
 			Map<CFNode, String> ctrlNodes = new HashMap<>();
 			Map<PDNode, String> dataNodes = new HashMap<>();
 			int nodeCounter = 1;
-			for (CFNode node: cfg.vertexSet()) {
-				String name = "n" + nodeCounter++;
+            Enumeration<CFNode> cfNodes = cfg.enumerateAllVertices();
+			while (cfNodes.hasMoreElements()) {
+                CFNode node = cfNodes.nextElement();
+				String name = "v" + nodeCounter++;
 				ctrlNodes.put(node, name);
 				PDNode pdNode = (PDNode) node.getProperty("pdnode");
 				if (pdNode != null)
 					dataNodes.put(pdNode, name);
-				StringBuilder label = new StringBuilder("   [label=\"");
+				StringBuilder label = new StringBuilder("  [label=\"");
 				if (node.getLineOfCode() > 0)
 					label.append(node.getLineOfCode()).append(":  ");
 				label.append(StringUtils.escape(node.getCode())).append("\"];");
-				dot.println("   " + name + label.toString());
+				dot.println("  " + name + label.toString());
 			}
-			dot.println();
-			for (CFEdge ctrlEdge: cfg.edgeSet()) {
-				String src = ctrlNodes.get(cfg.getEdgeSource(ctrlEdge));
-				String trg = ctrlNodes.get(cfg.getEdgeTarget(ctrlEdge));
+			dot.println("  // graph-edges");
+            Enumeration<Edge<CFNode, CFEdge>> cfEdges = cfg.enumerateAllEdges();
+			while (cfEdges.hasMoreElements()) {
+                Edge<CFNode, CFEdge> ctrlEdge = cfEdges.nextElement();
+				String src = ctrlNodes.get(ctrlEdge.source);
+				String trg = ctrlNodes.get(ctrlEdge.target);
 				if (ctrlEdgeLabels)
-					dot.println("   " + src + " -> " + trg + "   [arrowhead=empty, color=gray, style=dashed, label=\"" + ctrlEdge.type + "\"];");
+					dot.println("  " + src + " -> " + trg + 
+                                "  [arrowhead=empty, color=gray, style=dashed, label=\"" + ctrlEdge.label.type + "\"];");
 				else
-					dot.println("   " + src + " -> " + trg + "   [arrowhead=empty, color=gray, style=dashed];");
+					dot.println("  " + src + " -> " + trg + "  [arrowhead=empty, color=gray, style=dashed];");
 			}
-			for (DDEdge dataEdge: edgeSet()) {
-				String src = dataNodes.get(getEdgeSource(dataEdge));
-				String trg = dataNodes.get(getEdgeTarget(dataEdge));
-				dot.println("   " + src + " -> " + trg + "   [style=bold, label=\" (" + dataEdge.var + ")\"];");
+			for (Edge<PDNode, DDEdge> dataEdge: allEdges) {
+				String src = dataNodes.get(dataEdge.source);
+				String trg = dataNodes.get(dataEdge.target);
+				dot.println("   " + src + " -> " + trg + "   [style=bold, label=\" (" + dataEdge.label.var + ")\"];");
 			}
-			dot.println("\n}");
+			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
 			System.err.println(ex);
 		}

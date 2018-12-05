@@ -3,6 +3,8 @@ package progex.graphs.cfg;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Enumeration;
+import progex.graphs.Edge;
 
 /**
  *
@@ -13,10 +15,10 @@ public class CFPathTraversal {
 	private CFNode start;
 	private ControlFlowGraph cfg;
 	
-	private CFEdge edge;
 	private CFNode current;
-	private Deque<CFEdge> paths;
 	private boolean continueNextPath;
+	private Edge<CFNode, CFEdge> nextEdge;
+	private Deque<Edge<CFNode, CFEdge>> paths;
 	
 	public CFPathTraversal(ControlFlowGraph cfg, CFNode startNode) {
 		this.cfg = cfg;
@@ -24,38 +26,38 @@ public class CFPathTraversal {
 		paths = new ArrayDeque<>();
 		continueNextPath = false;
 		current = null;
-		edge = null;
+		nextEdge = null;
 	}
 	
 	private CFNode start() {
-		edge = new CFEdge(CFEdge.Type.EPSILON);
+		nextEdge = null;//new CFEdge(CFEdge.Type.EPSILON);
 		current = start;
 		return current;
 	}
 	
 	public boolean hasNext() {
 		return current == null || (!paths.isEmpty()) || 
-				(cfg.outDegreeOf(current) > 0 && !continueNextPath);
+				(cfg.getOutDegree(current) > 0 && !continueNextPath);
 	}
 	
 	public CFNode next() {
 		if (current == null)
 			return start();
 		//
-		if (!continueNextPath)
-			for (CFEdge edge: cfg.outgoingEdgesOf(current))
-				paths.push(edge);
+		if (!continueNextPath) {
+            Enumeration<Edge<CFNode, CFEdge>> outEdges = cfg.enumerateOutgoingEdges(current);
+			while (outEdges.hasMoreElements()) {
+                Edge<CFNode, CFEdge> out = outEdges.nextElement();
+				paths.push(out);
+            }
+        }
 		continueNextPath = false;
 		//
 		if (paths.isEmpty())
 			return null;
-		edge = paths.pop();
-		current = cfg.getEdgeTarget(edge);
+		nextEdge = paths.pop();
+		current = nextEdge.target;
 		return current;
-	}
-	
-	public CFEdge edge() {
-		return edge;
 	}
 	
 	public void continueNextPath() {

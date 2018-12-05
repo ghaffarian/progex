@@ -18,9 +18,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.jgrapht.Graphs;
-import org.jgrapht.traverse.GraphIterator;
-import org.jgrapht.traverse.DepthFirstIterator;
+import progex.graphs.DepthFirstTraversal;
+import progex.graphs.Edge;
+import progex.graphs.GraphTraversal;
 import progex.graphs.cfg.CFEdge;
 import progex.graphs.cfg.CFNode;
 import progex.graphs.cfg.ControlFlowGraph;
@@ -116,15 +116,15 @@ public class JavaICFGBuilder {
 				}
 				ArrayList<CFNode> exitpoints = new ArrayList<>();
 				/////////////////////////////////////////
-				GraphIterator<CFNode, CFEdge> iter = new DepthFirstIterator(cfg, entry);
+                GraphTraversal<CFNode, CFEdge> iter = new DepthFirstTraversal<>(cfg, entry);
 				while (iter.hasNext()) {
-					CFNode node = iter.next();
-					if (cfg.outDegreeOf(node) == 0) {
+					CFNode node = iter.nextVertex();
+					if (cfg.getOutDegree(node) == 0) {
 						exitpoints.add(node);
 					}
 				}
 				entry.setProperty("exits", exitpoints);
-				Graphs.addGraph(icfg, cfg);
+				icfg.addGraph(cfg);
 				icfg.addMethodEntry(entry);
 			}
 		}
@@ -139,9 +139,9 @@ public class JavaICFGBuilder {
 
 //		MethodKey keyNotImpl = new MethodKey("Not Implemented", "Not Implemented", "notImplemented", 0);
 //		keyToEntry.put(keyNotImpl, notImplemented);
-		GraphIterator<CFNode, CFEdge> iter = new DepthFirstIterator<>(icfg);
+		GraphTraversal<CFNode, CFEdge> iter = new DepthFirstTraversal<>(icfg, icfg.getAllMethodEntries()[0]);
 		while (iter.hasNext()) {
-			CFNode node = iter.next();
+			CFNode node = iter.nextVertex();
 			ArrayList<MethodKey> keys = (ArrayList<MethodKey>) node.getProperty("calls");
 			if (keys != null) {
 				// ToDO: Fix the counter problem when calling more than one method in a single statement
@@ -153,9 +153,9 @@ public class JavaICFGBuilder {
 					if (entry != null) {// then this is a call-site
 						// add CALLS edge from 'node' to 'entry'
 						if (!icfg.containsEdge(node, entry)) {
-							icfg.addEdge(node, entry, new CFEdge(CFEdge.Type.CALLS/*, counter++*/));
+							icfg.addEdge(new Edge<>(node, new CFEdge(CFEdge.Type.CALLS/*, counter++*/), entry));
 							for (CFNode exitNode : (ArrayList<CFNode>) entry.getProperty("exits")) {
-								icfg.addEdge(exitNode, node, new CFEdge(CFEdge.Type.RETURN));
+								icfg.addEdge(new Edge<>(exitNode, new CFEdge(CFEdge.Type.RETURN), node));
 							}
 						}
 						//System.out.println("Node code:"+node.getCode()+"Entry:"+entry.getCode());

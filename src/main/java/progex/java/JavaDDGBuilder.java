@@ -24,6 +24,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import progex.graphs.Edge;
 import progex.graphs.cfg.CFNode;
 import progex.graphs.cfg.CFPathTraversal;
 import progex.graphs.cfg.ControlFlowGraph;
@@ -47,11 +48,12 @@ public class JavaDDGBuilder {
 	// Just for debugging
 	private static String currentFile;
 	
-	private static Map<String, JavaClass> allClassInfos;
 	// NOTE: This doesn't handle duplicate class names;
 	//       yet assuming no duplicate class names is fair enough.
 	//       To handle that, we should use 'Map<String, List<JavaClass>>'
-	private static Map<String, List<MethodDefInfo>> methodDEFs;
+	private static Map<String, JavaClass> allClassInfos;
+
+    private static Map<String, List<MethodDefInfo>> methodDEFs;
 	
 	public static DataDependenceGraph[] buildForAll(File[] files) throws IOException {
 		// Parse all Java source files
@@ -302,7 +304,7 @@ public class JavaDDGBuilder {
 					continue;
 				// first add any self-flows of this node
 				for (String flow: defNode.getAllSelfFlows()) {
-					ddg.addEdge(defNode, defNode, new DDEdge(DDEdge.Type.FLOW, flow));
+					ddg.addEdge(new Edge<>(defNode, new DDEdge(DDEdge.Type.FLOW, flow), defNode));
 				}
 				// now traverse the CFG for any USEs till a DEF
 				Set<CFNode> visitedUses = new LinkedHashSet<>();
@@ -324,7 +326,7 @@ public class JavaDDGBuilder {
 							useTraversal.continueNextPath(); // no need to continue this path
 						else 
 							if (useNode.hasUSE(def))
-								ddg.addEdge(defNode, useNode, new DDEdge(DDEdge.Type.FLOW, def));
+								ddg.addEdge(new Edge<>(defNode, new DDEdge(DDEdge.Type.FLOW, def), useNode));
 					}
 				}
 			}

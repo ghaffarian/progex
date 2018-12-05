@@ -7,9 +7,6 @@ package progex.graphs.pdg;
  * Control Dependence Subgraph (CDS),
  * and Data Dependence Subgraph (DDS).
  * In this class, both the CDS and DDS are accessible.
- * The CDS is based on the DefaultDirectedGraph implementation from JGraphT lib.
- * The DDS is based on the DirectedPseudograph implementation from JGraphT lib.
- * @see http://jgrapht.org
  * 
  * NOTE: the vertex-sets of the two subgraphs are not equivalent and 
  *       are different sets with different node instances.
