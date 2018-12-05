@@ -301,7 +301,7 @@ public class Graph<V,E> {
         if (IS_DIRECTED)
             return allEdges.contains(e);
         else
-            return allEdges.contains(e.reverse());
+            return allEdges.contains(e) || allEdges.contains(e.reverse());
     }
     
     /**
