@@ -10,3 +10,4 @@
 /prepare.sh
 
 *.log
+/target/
