@@ -23,11 +23,10 @@ public class Graph<V,E> {
     
     public final boolean IS_DIRECTED;
     
-    // Change access modifiers to package private for efficient access by other package members.
-    /* package private */ Set<V> allVertices;
-    /* package private */ Set<Edge<V,E>> allEdges;
-    /* package private */ Map<V, Set<Edge<V,E>>> inEdges;
-    /* package private */ Map<V, Set<Edge<V,E>>> outEdges;
+    protected Set<V> allVertices;
+    protected Set<Edge<V,E>> allEdges;
+    protected Map<V, Set<Edge<V,E>>> inEdges;
+    protected Map<V, Set<Edge<V,E>>> outEdges;
     
     /**
      * Construct a new empty Graph object with the given direction property.
@@ -170,6 +169,20 @@ public class Graph<V,E> {
     }
     
     /**
+     * Adds all vertices and edges of the given graph to this graph.
+     * 
+     * @return true if this graph was modified; otherwise false.
+     */
+    public boolean addGraph(Graph<V,E> graph) {
+        boolean modified = false;
+        for (V vrtx: graph.allVertices)
+            modified |= addVertex(vrtx);
+        for (Edge<V,E> edge: graph.allEdges)
+            modified |= addEdge(edge);
+        return modified;
+    }
+    
+    /**
      * Return the number of vertices in this graph.
      */
     public int vertexCount() {
@@ -285,7 +298,26 @@ public class Graph<V,E> {
      * Check if this graph contains the given edge.
      */
     public boolean containsEdge(Edge<V,E> e) {
-        return allEdges.contains(e);
+        if (IS_DIRECTED)
+            return allEdges.contains(e);
+        else
+            return allEdges.contains(e.reverse());
+    }
+    
+    /**
+     * Check if this graph contains an edge between the given vertices.
+     */
+    public boolean containsEdge(V src, V trg) {
+        for (Edge<V,E> edge: outEdges.get(src)) {
+            if (edge.target.equals(trg))
+                return true;
+        }
+        if (!IS_DIRECTED) {
+            for (Edge<V,E> edge: outEdges.get(trg))
+                if (edge.target.equals(src))
+                    return true;
+        }
+        return false;
     }
     
     /**
