@@ -10,9 +10,9 @@ based on the [ANTLR parser generator](http://www.antlr.org).
 PROGEX reads program source code files as input, and is able to generate various graphical program representations 
 and export them into well-known file formats for graphs; such as [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) and [JSON](https://en.wikipedia.org/wiki/JSON).
 
-The development of PROGEX is done using the [Netbeans IDE](https://netbeans.org/), 
-hence the structure of this repository is a Netbeans IDE project.
-If you are interested in contributing to this project, you can easily get up and running using Netbeans.
+The structure of this repository is a Maven project.
+If you are interested in contributing to this project, 
+you can easily get up and running using your favorite Java IDE and Maven.
 
 This is an internal project by members of our lab from [Amirkabir University of Technology](http://aut.ac.ir/), 
 as a sub-project of the PhD thesis of [Seyed Mohammad Ghaffarian](http://linkedin.com/in/smghaffarian).
