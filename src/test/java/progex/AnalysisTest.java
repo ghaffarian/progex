@@ -17,8 +17,8 @@ public class AnalysisTest {
         String[] args = {"-cfg", "-outdir", "out", srcDir};
         Main.main(args);
         //
-        String[] testFiles = FileUtils.listSourceCodeFiles(new String[] {srcDir}, Execution.Languages.JAVA.suffix);
-        String[] outFiles = FileUtils.listSourceCodeFiles(new String[]{"out"}, "-CFG.dot");
+        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {srcDir}, Execution.Languages.JAVA.suffix);
+        String[] outFiles = FileUtils.listFilesWithSuffix(new String[]{"out"}, "-CFG.dot");
         assertEquals(testFiles.length, outFiles.length);
     }
     

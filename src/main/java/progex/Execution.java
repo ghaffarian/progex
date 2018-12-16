@@ -171,7 +171,7 @@ public class Execution {
 		String[] paths = inputPaths.toArray(new String[inputPaths.size()]);
 		String[] filePaths = new String[0];
 		if (paths.length > 0)
-			filePaths = FileUtils.listSourceCodeFiles(paths, lang.suffix);
+			filePaths = FileUtils.listFilesWithSuffix(paths, lang.suffix);
 		Logger.log("\n# " + lang.name + " source files = " + filePaths.length + "\n");
 		
 		// Check language

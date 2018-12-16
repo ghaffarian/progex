@@ -17,7 +17,7 @@ public class FileUtils {
 	 * Returns a list of file-paths based on the given input file-paths 
 	 * where the files exist and the filenames match a given suffix.
 	 */
-	public static String[] listSourceCodeFiles(String[] args, String suffix) {
+	public static String[] listFilesWithSuffix(String[] args, String suffix) {
 		ArrayList<File> files = new ArrayList<>();
 		for (String arg: args) {
 			if (arg.contains("*")) {
@@ -31,18 +31,18 @@ public class FileUtils {
 				files.add(new File(arg));
 			}
 		}
-		return listSourceCodeFiles(files.toArray(new File[files.size()]), suffix);
+		return listFilesWithSuffix(files.toArray(new File[files.size()]), suffix);
 	}
 	
 	/**
 	 * Returns a list of file-paths based on the given file objects 
 	 * where the files exist and the filenames match a given suffix.
 	 */
-	public static String[] listSourceCodeFiles(File[] argFiles, String suffix) {
+	public static String[] listFilesWithSuffix(File[] argFiles, String suffix) {
 		ArrayList<String> list = new ArrayList<>();
 		for (File file: argFiles) {
 			if (file.isDirectory()) {
-				list.addAll(Arrays.asList(listSourceCodeFiles(file.listFiles(), suffix)));
+				list.addAll(Arrays.asList(listFilesWithSuffix(file.listFiles(), suffix)));
 			} else {
 				if (file.exists() && file.getName().endsWith(suffix))
 					list.add(file.getAbsolutePath());
