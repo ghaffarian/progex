@@ -137,7 +137,7 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-DATA.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + "_PDG_DATA {\n");
+			dot.println("digraph " + filename + "_PDG_DATA {");
             dot.println("  // graph-vertices");
 			Map<CFNode, String> ctrlNodes = new HashMap<>();
 			Map<PDNode, String> dataNodes = new HashMap<>();

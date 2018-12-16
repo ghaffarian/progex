@@ -111,7 +111,7 @@ public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + "_CFG {\n");
+			dot.println("digraph " + filename + "_CFG {");
             dot.println("  // graph-vertices");
 			Map<CFNode, String> nodeNames = new LinkedHashMap<>();
 			int nodeCounter = 1;

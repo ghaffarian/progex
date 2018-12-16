@@ -89,7 +89,7 @@ public class ControlDependenceGraph extends Graph<PDNode, CDEdge> {
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-CTRL.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + "_PDG_CTRL {\n");
+			dot.println("digraph " + filename + "_PDG_CTRL {");
             dot.println("  // graph-vertices");
 			Map<PDNode, String> nodeNames = new LinkedHashMap<>();
 			int nodeCounter = 1;
