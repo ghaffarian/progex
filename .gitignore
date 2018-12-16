@@ -1,13 +1,6 @@
 /archive/
-/build/
-/nbbuild/
-/dist/
-/nbdist/
-/test/
-/nbproject/private/
-/.nb-gradle/
-
-/prepare.sh
-
-*.log
 /target/
+/out/
+
+prepare.sh
+*.log
