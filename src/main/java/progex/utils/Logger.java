@@ -62,6 +62,7 @@ public class Logger {
         // First, fail safe initializations
         enabled = true;
         echoStdOut = false;
+        timeTagEnabled = true;
         logStream = System.out;
         activeLevel = Level.INFORMATION;
         // Now, the real deal
@@ -138,7 +139,7 @@ public class Logger {
     
     /**
      * Enable/Disable time-tags for log messages.
-     * If set to false, no time-tags or labels will be printed in the log.
+     * If set to false, no time-tags or labels will be written for logs.
      */
     public static void setTimeTagEnabled(boolean enabled) {
         timeTagEnabled = enabled;
