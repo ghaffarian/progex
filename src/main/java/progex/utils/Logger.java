@@ -50,6 +50,7 @@ public class Logger {
     private static PrintStream logStream;
     private static PrintWriter logWriter;
     private static DateFormat dateFormat;
+    private static boolean timeTagEnabled;
     
     
     /**
@@ -136,6 +137,14 @@ public class Logger {
     }
     
     /**
+     * Enable/Disable time-tags for log messages.
+     * If set to false, no time-tags or labels will be printed in the log.
+     */
+    public static void setTimeTagEnabled(boolean enabled) {
+        timeTagEnabled = enabled;
+    }
+    
+    /**
      * Returns a string representation of the current system time. 
      * The string is formatted as HH:MM:SS:mmm.
      */
@@ -182,7 +191,7 @@ public class Logger {
         if (lvl.ORDER <= activeLevel.ORDER) {
             ioLock.lock();
             try {
-                if (lvl.ORDER > Level.RAW.ORDER) {
+                if (lvl.ORDER > Level.RAW.ORDER && timeTagEnabled) {
                     Object[] fmtArgs;
                     if (args != null && args.length > 0) {
                         fmtArgs = new Object[2 + args.length];
@@ -214,7 +223,7 @@ public class Logger {
         if (lvl.ORDER <= activeLevel.ORDER) {
             ioLock.lock();
             try {
-                if (lvl.ORDER > Level.RAW.ORDER) {
+                if (lvl.ORDER > Level.RAW.ORDER && timeTagEnabled) {
                     logWriter.printf("%s [%s] | %s\n", date(), lvl.LABEL, msg);
                     // No need to flush, since the writer is set to auto-flush.
                 } else {
@@ -239,7 +248,7 @@ public class Logger {
         if (lvl.ORDER <= activeLevel.ORDER) {
             ioLock.lock();
             try {
-                if (lvl.ORDER > Level.RAW.ORDER) {
+                if (lvl.ORDER > Level.RAW.ORDER && timeTagEnabled) {
                     logWriter.printf("%s [%s] | %s\n", date(), lvl.LABEL, ex.toString());
                     // No need to flush, since the writer is set to auto-flush.
                 } else {
