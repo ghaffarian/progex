@@ -19,7 +19,7 @@ public class Main {
 		//
 		try {
 			progex.utils.Logger.init("PROGEX.log");
-			//Logger.redirectStandardError("PROGEX.err");
+			progex.utils.Logger.redirectStandardError("PROGEX.err");
 		} catch (java.io.IOException ex) {
 			System.err.println("Logger init failed : " + ex);
 		}
