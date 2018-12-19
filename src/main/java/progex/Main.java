@@ -18,8 +18,8 @@ public class Main {
 		System.out.println("Visit project website @ https://github.com/ghaffarian/progex\n");
 		//
 		try {
-			progex.utils.Logger.init("PROGEX.log");
-			progex.utils.Logger.redirectStandardError("PROGEX.err");
+			progex.utils.Logger.init("progex.log");
+            progex.utils.Logger.setTimeTagEnabled(false);
 		} catch (java.io.IOException ex) {
 			System.err.println("Logger init failed : " + ex);
 		}

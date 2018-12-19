@@ -2,6 +2,8 @@
 package progex;
 
 import java.io.File;
+import java.io.IOException;
+import progex.utils.Logger;
 
 /**
  * Command Line Interface (CLI) for PROGEX.
@@ -104,6 +106,19 @@ public class CLI {
 							}
 							break;
 						//
+						case "debug":
+                            try {
+                                Logger.setActiveLevel(Logger.Level.DEBUG);
+                                progex.utils.Logger.redirectStandardError("PROGEX.err");
+                            } catch (IOException ex) {
+                                System.err.println(ex);
+                            }
+							break;
+						//
+						case "timetags":
+                            Logger.setTimeTagEnabled(true);
+							break;
+						//
 						default:
 							printHelp("Unknown Option: " + args[i]);
 							System.exit(1);
@@ -135,15 +150,17 @@ public class CLI {
 		String[] help = {
 			"USAGE:\n\n   java -jar PROGEX.jar [-OPTIONS...] /path/to/program/src\n",
 			"OPTIONS:\n",
-			"   -help    Print this help message",
-			"   -outdir  Specify path of output directory",
-			"   -format  Specify output format; either 'JSON' or 'DOT'",
-			"   -lang    Specify language of program source codes\n",
-			"   -ast     Perform AST (Abstract Syntax Tree) analysis",
-			"   -cfg     Perfomt CFG (Control Flow Graph) analysis",
-			"   -icfg    Perform ICFG (Interprocedural CFG) analysis",
-			"   -info    Analyze and extract detailed information about program source code",
-			"   -pdg     Perform PDG (Program Dependence Graph) analysis\n",
+			"   -help      Print this help message",
+			"   -outdir    Specify path of output directory",
+			"   -format    Specify output format; either 'JSON' or 'DOT'",
+			"   -lang      Specify language of program source codes\n",
+			"   -ast       Perform AST (Abstract Syntax Tree) analysis",
+			"   -cfg       Perfomt CFG (Control Flow Graph) analysis",
+			"   -icfg      Perform ICFG (Interprocedural CFG) analysis",
+			"   -info      Analyze and extract detailed information about program source code",
+			"   -pdg       Perform PDG (Program Dependence Graph) analysis\n",
+			"   -debug     Enable more detailed logs (only for debugging)",
+			"   -timetags  Enable time-tags and labels for logs (only for debugging)\n",
 			"DEFAULTS:\n",
 			"   - If not specified, the default output directory is the current working directory.",
 			"   - If not specified, the default output format is DOT.",
