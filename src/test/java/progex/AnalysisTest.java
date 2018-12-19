@@ -8,12 +8,13 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
- *
+ * Tests for different types of analysis.
+ * 
  * @author Seyed Mohammad Ghaffarian
  */
 public class AnalysisTest {
     
-    private final String SRC_DIR = "src/test/resources/progex";
+    private final String JAVA_SRC_DIR = "src/test/resources/java/progex";
     
     @BeforeClass
     public static void cleanUp() {
@@ -40,20 +41,20 @@ public class AnalysisTest {
     
     @Test
     public void javaCFGTest() {
-        String[] args = {"-cfg", "-outdir", "out/cfg/", SRC_DIR};
+        String[] args = {"-cfg", "-outdir", "out/java/cfg/", JAVA_SRC_DIR};
         Main.main(args);
         //
-        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {SRC_DIR}, Execution.Languages.JAVA.suffix);
+        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
         String[] outFiles = FileUtils.listFilesWithSuffix(new String[]{"out/cfg/"}, "-CFG.dot");
         assertEquals(testFiles.length, outFiles.length);
     }
     
     @Test
     public void javaPDGTest() {
-        String[] args = {"-pdg", "-outdir", "out/pdg/", SRC_DIR};
+        String[] args = {"-pdg", "-outdir", "out/java/pdg/", JAVA_SRC_DIR};
         Main.main(args);
         //
-        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {SRC_DIR}, Execution.Languages.JAVA.suffix);
+        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
         String[] outDataFiles = FileUtils.listFilesWithSuffix(new String[]{"out/pdg/"}, "-PDG-DATA.dot");
         String[] outCtrlFiles = FileUtils.listFilesWithSuffix(new String[]{"out/pdg/"}, "-PDG-CTRL.dot");
         assertEquals(testFiles.length, outDataFiles.length);
