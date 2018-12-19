@@ -166,7 +166,7 @@ public class JavaDDGBuilder {
 		//       so, we need to extract specific ZIP-entries for all imports.
 		// For each import find the ZIP-entries, 
 		// and extract the ParseTree and JavaClass[] infos
-		ZipFile zip = new ZipFile("lib/src.zip");
+		ZipFile zip = new ZipFile("res/jdk7-src.zip");
 		Set<String> imports = new LinkedHashSet<>();
 		List<ParseTree> importsParseTrees = new ArrayList<>();
 		List<JavaClass[]> importsClassInfos = new ArrayList<>();
