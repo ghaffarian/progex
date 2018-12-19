@@ -1,6 +1,8 @@
 /archive/
 /target/
 /out/
+/res/
 
 prepare.sh
 *.log
+*.err
