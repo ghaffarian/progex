@@ -117,23 +117,17 @@ public class Execution {
 	}
 	
 	public boolean setOutputDirectory(String outPath) {
-		boolean result = false;
-		File newDir = new File(outPath);
-		if (newDir.exists()) {
-			if (newDir.canWrite() && newDir.isDirectory()) {
+        if (!outPath.endsWith(File.separator))
+            outPath += File.separator;
+		File outDir = new File(outPath);
+        outDir.mkdirs();
+		if (outDir.exists()) {
+			if (outDir.canWrite() && outDir.isDirectory()) {
 				outputDir = outPath;
-				result = true;
-			} else {
-				newDir = new File(outPath + File.separator);
-				if (newDir.canWrite() && newDir.isDirectory()) {
-					outputDir = outPath + File.separator;
-					result = true;
-				}
+				return true;
 			}
 		}
-		if (!outputDir.endsWith(File.separator))
-			outputDir += File.separator;
-		return result;
+		return false;
 	}
 	
 	@Override
@@ -224,7 +218,7 @@ public class Execution {
 						for (ProgramDependeceGraph pdg: PDGBuilder.buildForAll(lang.name, filePaths)) {
 							pdg.CDS.export(format.name, outputDir);
 							pdg.DDS.export(format.name, outputDir);
-							pdg.DDS.getCFG().export(format.name, outputDir);;
+							pdg.DDS.getCFG().export(format.name, outputDir);
 							pdg.DDS.printAllNodesUseDefs(Logger.getStream());
 						}
 					} catch (IOException ex) {
