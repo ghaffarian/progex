@@ -1,6 +1,8 @@
 /*** In The Name of Allah ***/
 package progex;
 
+import progex.utils.Logger;
+
 /**
  * The executions starting point.
  * 
@@ -14,15 +16,16 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-		System.out.printf("PROGEX (Program Graph Extractor)  [ ver. %s ]\n", VERSION);
-		System.out.println("Visit project website @ https://github.com/ghaffarian/progex\n");
-		//
 		try {
-			progex.utils.Logger.init("progex.log");
-            progex.utils.Logger.setTimeTagEnabled(false);
+			Logger.init("progex.log");
+            Logger.setEchoToStdOut(true);
+            Logger.setTimeTagEnabled(false);
 		} catch (java.io.IOException ex) {
-			System.err.println("Logger init failed : " + ex);
+			System.err.println("[ERR] LOGGER INIT FAILED : " + ex);
 		}
+        //
+        Logger.printf(Logger.Level.INFO, "PROGEX (Program Graph Extractor)  [ v%s ]", VERSION);
+        Logger.info("Visit project website @ https://github.com/ghaffarian/progex\n");
 		//
 		if (args.length == 0) {
 			CLI.printHelp(null);
