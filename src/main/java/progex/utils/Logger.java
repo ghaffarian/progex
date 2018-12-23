@@ -46,7 +46,8 @@ public class Logger {
     private static Lock ioLock;
     private static boolean enabled;
     private static Level activeLevel;
-    private static boolean echoStdOut;
+    private static boolean stdOutEcho;
+    private static Level stdOutEchoLevel;
     private static PrintStream logStream;
     private static PrintWriter logWriter;
     private static DateFormat dateFormat;
@@ -61,10 +62,11 @@ public class Logger {
     public static void init(String path) throws IOException {
         // First, fail safe initializations
         enabled = true;
-        echoStdOut = false;
+        stdOutEcho = false;
         timeTagEnabled = true;
         logStream = System.out;
         activeLevel = Level.INFORMATION;
+        stdOutEchoLevel = activeLevel;
         // Now, the real deal
         try {
             ioLock = new ReentrantLock();
@@ -113,8 +115,8 @@ public class Logger {
      * 
      * Default level is INFORMATION.
      */
-    public static void setActiveLevel(Level lvl) {
-        activeLevel = lvl;
+    public static void setActiveLevel(Level level) {
+        activeLevel = level;
     }
 
     /**
@@ -126,7 +128,21 @@ public class Logger {
      * Default value is false.
      */
     public static void setEchoToStdOut(boolean echo) {
-        echoStdOut = echo;
+        stdOutEcho = echo;
+    }
+    
+    /**
+     * Set the max level of logs to be printed in standard-output.
+     * Only log-operations with level less-than or equal to the 
+     * echo-level will be printed to standard-output.
+     * 
+     * This method affects all logging operations afterwards,
+     * and does not affect any logging performed before-hand.
+     * 
+     * Default level is INFORMATION.
+     */
+    public static void setStdOutEchoLevel(Level echoLevel) {
+        stdOutEchoLevel = echoLevel;
     }
     
     /**
@@ -186,28 +202,28 @@ public class Logger {
      * Formatted logging at the given Level.
      * This is similar to printing using printf.
      */
-    public static void printf(Level lvl, String format, Object... args) {
+    public static void printf(Level level, String format, Object... args) {
         if (!enabled)
             return;
-        if (lvl.ORDER <= activeLevel.ORDER) {
+        if (level.ORDER <= activeLevel.ORDER) {
             ioLock.lock();
             try {
-                if (lvl.ORDER > Level.RAW.ORDER && timeTagEnabled) {
+                if (level.ORDER > Level.RAW.ORDER && timeTagEnabled) {
                     Object[] fmtArgs;
                     if (args != null && args.length > 0) {
                         fmtArgs = new Object[2 + args.length];
                         fmtArgs[0] = date();
-                        fmtArgs[1] = lvl.LABEL;
+                        fmtArgs[1] = level.LABEL;
                         for (int i = 0; i < args.length; ++i)
                             fmtArgs[i + 2] = args[i];
                     } else
-                        fmtArgs = new Object[] {date(), lvl.LABEL};
+                        fmtArgs = new Object[] {date(), level.LABEL};
                     logWriter.printf("%s [%s] | " + format + "\n", fmtArgs);
                 } else {
                     logWriter.printf(format + "\n", args);
                 }
                 //
-                if (echoStdOut && logStream != System.out)
+                if (stdOutEcho && logStream != System.out && level.ORDER <= stdOutEchoLevel.ORDER)
                     System.out.printf(format + "\n", args);
             } finally {
                 ioLock.unlock();
@@ -218,20 +234,20 @@ public class Logger {
     /**
      * Logs the given message as a new line in the log-file.
      */
-    public static void log(String msg, Level lvl) {
+    public static void log(String msg, Level level) {
         if (!enabled)
             return;
-        if (lvl.ORDER <= activeLevel.ORDER) {
+        if (level.ORDER <= activeLevel.ORDER) {
             ioLock.lock();
             try {
-                if (lvl.ORDER > Level.RAW.ORDER && timeTagEnabled) {
-                    logWriter.printf("%s [%s] | %s\n", date(), lvl.LABEL, msg);
+                if (level.ORDER > Level.RAW.ORDER && timeTagEnabled) {
+                    logWriter.printf("%s [%s] | %s\n", date(), level.LABEL, msg);
                     // No need to flush, since the writer is set to auto-flush.
                 } else {
                     logWriter.println(msg);
                 }
                 //
-                if (echoStdOut && logStream != System.out)
+                if (stdOutEcho && logStream != System.out && level.ORDER <= stdOutEchoLevel.ORDER)
                     System.out.println(msg);
             } finally {
                 ioLock.unlock();
@@ -243,21 +259,21 @@ public class Logger {
      * Fully logs the name and message of the given exception as a new line 
      * at the given level, and also logs the stack-trace beneath it.
      */
-    public static void log(Exception ex, Level lvl) {
+    public static void log(Exception ex, Level level) {
         if (!enabled)
             return;
-        if (lvl.ORDER <= activeLevel.ORDER) {
+        if (level.ORDER <= activeLevel.ORDER) {
             ioLock.lock();
             try {
-                if (lvl.ORDER > Level.RAW.ORDER && timeTagEnabled) {
-                    logWriter.printf("%s [%s] | %s\n", date(), lvl.LABEL, ex.toString());
+                if (level.ORDER > Level.RAW.ORDER && timeTagEnabled) {
+                    logWriter.printf("%s [%s] | %s\n", date(), level.LABEL, ex.toString());
                     // No need to flush, since the writer is set to auto-flush.
                 } else {
                     logWriter.println(ex.toString());
                 }
                 ex.printStackTrace(logWriter);
                 //
-                if (echoStdOut && logStream != System.out) {
+                if (stdOutEcho && logStream != System.out && level.ORDER <= stdOutEchoLevel.ORDER) {
                     System.out.println(ex.toString());
                     ex.printStackTrace(System.out);
                 }
