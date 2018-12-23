@@ -28,11 +28,11 @@ public class Logger {
      */
     public enum Level {
         
-        RAW         (0, null),
-        ERROR       (1, "ERR"),
-        WARNING     (2, "WRN"),
-        INFORMATION (3, "INF"),
-        DEBUG       (4, "DBG");
+        RAW      (0, null),
+        ERROR    (1, "ERR"),
+        WARNING  (2, "WRN"),
+        INFO     (3, "INF"),
+        DEBUG    (4, "DBG");
         
         private Level(int order, String label) {
             ORDER = order;
@@ -65,7 +65,7 @@ public class Logger {
         stdOutEcho = false;
         timeTagEnabled = true;
         logStream = System.out;
-        activeLevel = Level.INFORMATION;
+        activeLevel = Level.INFO;
         stdOutEchoLevel = activeLevel;
         // Now, the real deal
         try {
@@ -301,7 +301,7 @@ public class Logger {
      * Logs the given message as a new line at INFO level in the log-file. 
      */
     public static void info(String msg) {
-        log(msg, Level.INFORMATION);
+        log(msg, Level.INFO);
     }
 
     /**
