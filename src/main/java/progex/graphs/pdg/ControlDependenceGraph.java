@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import progex.graphs.Edge;
 import progex.graphs.Graph;
+import progex.utils.Logger;
 import progex.utils.StringUtils;
 
 /**
@@ -75,9 +76,9 @@ public class ControlDependenceGraph extends Graph<PDNode, CDEdge> {
 			}
 			json.println("  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
-			System.err.println(ex);
+			Logger.error(ex);
 		}
-		System.out.println("CDS of PDG exported to: " + filepath);
+		Logger.info("CDS of PDG exported to: " + filepath);
 	}
 	
 	/**
@@ -113,8 +114,8 @@ public class ControlDependenceGraph extends Graph<PDNode, CDEdge> {
 			}
 			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
-			System.err.println(ex);
+			Logger.error(ex);
 		}
-		System.out.println("CDS of PDG exported to: " + filepath);
+		Logger.info("CDS of PDG exported to: " + filepath);
 	}
 }

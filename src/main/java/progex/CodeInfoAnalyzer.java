@@ -22,21 +22,21 @@ public class CodeInfoAnalyzer {
 			//
 			case "Java":
 				try {
-					Logger.log("\n========================================\n");
-					Logger.log("FILE: " + srcFilePath);
+					Logger.info("\n========================================\n");
+					Logger.info("FILE: " + srcFilePath);
 					// first extract class info
 					List<JavaClass> classInfoList = JavaClassExtractor.extractInfo(srcFilePath);
 					for (JavaClass classInfo : classInfoList)
-						Logger.log("\n" + classInfo);
+						Logger.info("\n" + classInfo);
 					// then extract imports info
 					if (classInfoList.size() > 0) {
-						Logger.log("\n- - - - - - - - - - - - - - - - - - - - -");
+						Logger.info("\n- - - - - - - - - - - - - - - - - - - - -");
 						String[] imports = classInfoList.get(0).IMPORTS;
 						for (JavaClass importInfo : JavaClassExtractor.extractImportsInfo(imports)) 
-							Logger.log("\n" + importInfo);
+							Logger.info("\n" + importInfo);
 					}
 				} catch (IOException ex) {
-					System.err.println(ex);
+					Logger.error(ex);
 				}
 				return;
 			//

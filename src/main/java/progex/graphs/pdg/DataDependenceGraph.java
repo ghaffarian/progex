@@ -14,6 +14,7 @@ import progex.graphs.Graph;
 import progex.graphs.cfg.CFEdge;
 import progex.graphs.cfg.CFNode;
 import progex.graphs.cfg.ControlFlowGraph;
+import progex.utils.Logger;
 import progex.utils.StringUtils;
 
 /**
@@ -123,9 +124,9 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 			}
 			json.println("  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
-			System.err.println(ex);
+			Logger.error(ex);
 		}
-		System.out.println("DDS of PDG exported to: " + filepath);
+		Logger.info("DDS of PDG exported to: " + filepath);
 	}
 	
 	/**
@@ -175,8 +176,8 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 			}
 			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
-			System.err.println(ex);
+			Logger.error(ex);
 		}
-		System.out.println("DDS of PDG exported to: " + filepath);
+		Logger.info("DDS of PDG exported to: " + filepath);
 	}
 }

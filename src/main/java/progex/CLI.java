@@ -111,7 +111,7 @@ public class CLI {
                                 Logger.setActiveLevel(Logger.Level.DEBUG);
                                 progex.utils.Logger.redirectStandardError("PROGEX.err");
                             } catch (IOException ex) {
-                                System.err.println(ex);
+                                Logger.error(ex);
                             }
 							break;
 						//
@@ -133,7 +133,7 @@ public class CLI {
 				if (input.exists())
 					exec.addInputPath(args[i]);
 				else
-					System.out.println("WARNING -- Ignoring non-existant input path: " + args[i]);
+					Logger.warn("WARNING -- Ignoring non-existant input path: " + args[i]);
 			}
 		}
 		return exec;
@@ -145,7 +145,7 @@ public class CLI {
 	 */
 	public static void printHelp(String errMsg) {
 		if (errMsg != null && !errMsg.isEmpty())
-			System.out.println("ERROR -- " + errMsg + '\n');
+			Logger.error("ERROR -- " + errMsg + '\n');
 		
 		String[] help = {
 			"USAGE:\n\n   java -jar PROGEX.jar [-OPTIONS...] /path/to/program/src\n",
@@ -189,7 +189,7 @@ public class CLI {
 		};
 		
 		for (String line: help)
-			System.out.println(line);
+			Logger.info(line);
 	}
 
 }

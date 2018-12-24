@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import progex.graphs.Edge;
 import progex.graphs.Graph;
+import progex.utils.Logger;
 import progex.utils.StringUtils;
 
 /**
@@ -97,9 +98,9 @@ public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
 			}
 			json.println("  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
-			System.err.println(ex);
+			Logger.error(ex);
 		}
-		System.out.println("CFG exported to: " + filepath);
+		Logger.info("CFG exported to: " + filepath);
 	}
 	
 	/**
@@ -135,8 +136,8 @@ public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
 			}
 			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
-			System.err.println(ex);
+			Logger.error(ex);
 		}
-		System.out.println("CFG exported to: " + filepath);
+		Logger.info("CFG exported to: " + filepath);
 	}	
 }

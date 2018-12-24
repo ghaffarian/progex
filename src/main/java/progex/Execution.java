@@ -148,72 +148,70 @@ public class Execution {
 	 * Execute the PROGEX program with the given options.
 	 */
 	public void execute() {
-		Logger.setEchoToStdOut(true);
-        
 		if (inputPaths.isEmpty()) {
-			Logger.log("No input path provided!\nAbort.");
+			Logger.info("No input path provided!\nAbort.");
 			System.exit(0);
 		}
 		if (analysisTypes.isEmpty()) {
-			Logger.log("No analysis type provided!\nAbort.");
+			Logger.info("No analysis type provided!\nAbort.");
 			System.exit(0);
 		}
 		
-		Logger.log(toString());
+		Logger.info(toString());
 		
 		// 1. Extract source files from input-paths, based on selected language
 		String[] paths = inputPaths.toArray(new String[inputPaths.size()]);
 		String[] filePaths = new String[0];
 		if (paths.length > 0)
 			filePaths = FileUtils.listFilesWithSuffix(paths, lang.suffix);
-		Logger.log("\n# " + lang.name + " source files = " + filePaths.length + "\n");
+		Logger.info("\n# " + lang.name + " source files = " + filePaths.length + "\n");
 		
 		// Check language
 		if (!lang.equals(Languages.JAVA)) {
-			Logger.log("Analysis of " + lang.name + " programs is not yet implemented!");
-			Logger.log("Abort.");
+			Logger.info("Analysis of " + lang.name + " programs is not yet implemented!");
+			Logger.info("Abort.");
 			System.exit(0);
 		}
 
 		// 2. For each analysis type, do the analysis and output results
 		for (Analysis analysis: analysisTypes) {
 			
-			Logger.log("\nMemory Status");
-			Logger.log("=============");
-			Logger.log(SystemUtils.getMemoryStats());
+			Logger.debug("\nMemory Status");
+			Logger.debug("=============");
+			Logger.debug(SystemUtils.getMemoryStats());
 
 			switch (analysis.type) {
 				//
 				case "CFG":
-					Logger.log("\nControl-Flow Analysis");
-					Logger.log("=====================");
-					Logger.log("START: " + Logger.time() + '\n');
+					Logger.info("\nControl-Flow Analysis");
+					Logger.info("=====================");
+					Logger.info("START: " + Logger.time() + '\n');
 					for (String srcFile : filePaths) {
 						try {
 							ControlFlowGraph cfg = CFGBuilder.build(lang.name, srcFile);
 							cfg.export(format.name, outputDir);
 						} catch (IOException ex) {
-							Logger.log(ex, Logger.Level.RAW);
+							Logger.error(ex);
 						}
 					}
 					break;
 				//
 				case "ICFG":
-					Logger.log("\nInterprocedural Control-Flow Analysis");
-					Logger.log("=====================================");
-					Logger.log("START: " + Logger.time() + '\n');
+					Logger.info("\nInterprocedural Control-Flow Analysis");
+					Logger.info("=====================================");
+					Logger.info("START: " + Logger.time() + '\n');
 					try {
 						ControlFlowGraph icfg = ICFGBuilder.buildForAll(lang.name, filePaths);
 						icfg.export(format.name, outputDir);
 					} catch (IOException ex) {
-						Logger.log(ex, Logger.Level.RAW);
+						Logger.error(ex);
 					}
 					break;
 				//
 				case "PDG":
-					Logger.log("\nProgram-Dependence Analysis");
-					Logger.log("===========================");
-					Logger.log("START: " + Logger.time() + '\n');
+					Logger.info("\nProgram-Dependence Analysis");
+					Logger.info("===========================");
+					Logger.info("START: " + Logger.time() + '\n');
 					try {
 						for (ProgramDependeceGraph pdg: PDGBuilder.buildForAll(lang.name, filePaths)) {
 							pdg.CDS.export(format.name, outputDir);
@@ -222,26 +220,26 @@ public class Execution {
 							pdg.DDS.printAllNodesUseDefs(Logger.getStream());
 						}
 					} catch (IOException ex) {
-						Logger.log(ex, Logger.Level.RAW);
+						Logger.error(ex);
 					}
 					break;
 				//
 				case "INFO":
-					Logger.log("\nCode Information Analysis");
-					Logger.log("=========================");
-					Logger.log("START: " + Logger.time() + '\n');
+					Logger.info("\nCode Information Analysis");
+					Logger.info("=========================");
+					Logger.info("START: " + Logger.time() + '\n');
 					for (String srcFile : filePaths)
 						CodeInfoAnalyzer.analyzeInfo(lang.name, srcFile);
 					break;
 				//
 				default:
-					Logger.log("\n\'" + analysis.type + "\' analysis is not yet implemented!\n");
+					Logger.info("\n\'" + analysis.type + "\' analysis is not yet implemented!\n");
 			}
-			Logger.log("\nFINISH: " + Logger.time());
+			Logger.info("\nFINISH: " + Logger.time());
 		}
 		//
-		Logger.log("\nMemory Status");
-		Logger.log("=============");
-		Logger.log(SystemUtils.getMemoryStats());
+		Logger.debug("\nMemory Status");
+		Logger.debug("=============");
+		Logger.debug(SystemUtils.getMemoryStats());
 	}
 }
