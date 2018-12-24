@@ -57,7 +57,7 @@ public class JavaDDGBuilder {
 	
 	public static DataDependenceGraph[] buildForAll(File[] files) throws IOException {
 		// Parse all Java source files
-		Logger.info("\nParsing all source files ... ");
+		Logger.info("Parsing all source files ... ");
 		ParseTree[] parseTrees = new ParseTree[files.length];
 		for (int i = 0; i < files.length; ++i) {
 			InputStream inFile = new FileInputStream(files[i]);
@@ -145,7 +145,7 @@ public class JavaDDGBuilder {
 			addDataFlowEdges(cfgs[i], ddgs[i]);
 			ddgs[i].attachCFG(cfgs[i]);
 		}
-		Logger.info("Done.");
+		Logger.info("Done.\n");
 		
 		return ddgs;
 	}

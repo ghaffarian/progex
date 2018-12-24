@@ -24,7 +24,7 @@ public class Main {
 			System.err.println("[ERR] LOGGER INIT FAILED : " + ex);
 		}
         //
-        Logger.printf(Logger.Level.INFO, "PROGEX (Program Graph Extractor)  [ v%s ]", VERSION);
+        Logger.printf(Logger.Level.INFO, "\nPROGEX (Program Graph Extractor)  [ v%s ]", VERSION);
         Logger.info("Visit project website @ https://github.com/ghaffarian/progex\n");
 		//
 		if (args.length == 0) {
