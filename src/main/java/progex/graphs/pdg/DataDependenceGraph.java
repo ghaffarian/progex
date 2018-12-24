@@ -2,7 +2,6 @@
 package progex.graphs.pdg;
 
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -41,11 +40,11 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 		return cfg;
 	}
 	
-	public void printAllNodesUseDefs(PrintStream out) {
+	public void printAllNodesUseDefs(Logger.Level level) {
 		for (PDNode node: allVertices) {
-			out.println(node);
-			out.println("  + USEs: " + Arrays.toString(node.getAllUSEs()));
-			out.println("  + DEFs: " + Arrays.toString(node.getAllDEFs()) + "\n");
+			Logger.log(node, level);
+			Logger.log("  + USEs: " + Arrays.toString(node.getAllUSEs()), level);
+			Logger.log("  + DEFs: " + Arrays.toString(node.getAllDEFs()) + "\n", level);
 		}
 	}
 
