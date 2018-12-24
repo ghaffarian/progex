@@ -41,7 +41,7 @@ public class JavaCDGBuilder {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		JavaParser parser = new JavaParser(tokens);
 		ParseTree tree = parser.compilationUnit();
-		Logger.log("CTRL DEP ANALYSIS: " + javaFile.getPath());
+		Logger.debug("CTRL DEP ANALYSIS: " + javaFile.getPath());
 		ControlDependenceGraph cdg = new ControlDependenceGraph(javaFile.getName());
 		ControlDependencyVisitor visitor = new ControlDependencyVisitor(cdg);
 		visitor.visit(tree);
@@ -172,7 +172,7 @@ public class JavaCDGBuilder {
 			PDNode expr = new PDNode();
 			expr.setLineOfCode(ctx.getStart().getLine());
 			expr.setCode(getOriginalCodeText(ctx));
-			Logger.log(expr.toString());
+			Logger.debug(expr.getLineOfCode() + ": " + expr.getCode());
 			addNodeEdge(expr);
 			return null;
 		}
@@ -650,6 +650,8 @@ public class JavaCDGBuilder {
 		 * if so, create it and push it on the CTRL-dependence stack.
 		 */
 		private void checkBuildFollowRegion() {
+            Logger.debug("FOLLOWS = " + follows);
+            Logger.debug("BUILD-REGION = " + buildRegion);
 			if (buildRegion && follows) {
 				PDNode followRegion = new PDNode();
 				followRegion.setLineOfCode(0);

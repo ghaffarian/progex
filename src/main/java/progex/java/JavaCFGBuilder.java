@@ -23,6 +23,7 @@ import progex.graphs.cfg.ControlFlowGraph;
 import progex.java.parser.JavaBaseVisitor;
 import progex.java.parser.JavaLexer;
 import progex.java.parser.JavaParser;
+import progex.utils.Logger;
 
 /**
  * A Control Flow Graph (CFG) builder for Java programs.
@@ -237,7 +238,7 @@ public class JavaCFGBuilder {
 			expr.setLineOfCode(ctx.getStart().getLine());
 			expr.setCode(getOriginalCodeText(ctx));
 			//
-//			System.out.println(expr.getLineOfCode() + ": " + expr.getCode());
+			Logger.debug(expr.getLineOfCode() + ": " + expr.getCode());
 			//
 			addContextualProperty(expr, ctx);
 			addNodeAndPreEdge(expr);
@@ -861,8 +862,8 @@ public class JavaCFGBuilder {
 			if (dontPop)
 				dontPop = false;
 			else {
-//				System.out.println("\nPRE-NODES = " + preNodes.size());
-//				System.out.println("PRE-EDGES = " + preEdges.size() + '\n');
+				Logger.debug("\nPRE-NODES = " + preNodes.size());
+				Logger.debug("PRE-EDGES = " + preEdges.size() + '\n');
 				cfg.addEdge(new Edge<>(preNodes.pop(), new CFEdge(preEdges.pop()), node));
 			}
 			//

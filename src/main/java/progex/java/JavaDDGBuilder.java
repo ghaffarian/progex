@@ -57,7 +57,7 @@ public class JavaDDGBuilder {
 	
 	public static DataDependenceGraph[] buildForAll(File[] files) throws IOException {
 		// Parse all Java source files
-		System.out.print("\nParsing all source files ... ");
+		Logger.info("\nParsing all source files ... ");
 		ParseTree[] parseTrees = new ParseTree[files.length];
 		for (int i = 0; i < files.length; ++i) {
 			InputStream inFile = new FileInputStream(files[i]);
@@ -67,10 +67,10 @@ public class JavaDDGBuilder {
 			JavaParser parser = new JavaParser(tokens);
 			parseTrees[i] = parser.compilationUnit();
 		}
-		System.out.println("Done.");
+		Logger.info("Done.");
 		
 		// Extract the information of all given Java classes
-		System.out.print("\nExtracting class-infos ... ");
+		Logger.info("\nExtracting class-infos ... ");
 		allClassInfos = new HashMap<>();
 		List<JavaClass[]> filesClasses = new ArrayList<>();
 		for (int i = 0; i < files.length; ++i) {
@@ -79,10 +79,10 @@ public class JavaDDGBuilder {
 			for (JavaClass cls: classesList) 
 				allClassInfos.put(cls.NAME, cls);
 		}
-		System.out.println("Done.");
+		Logger.info("Done.");
 		
 		// Initialize method DEF information
-		System.out.print("\nInitializing method-DEF infos ... ");
+		Logger.info("\nInitializing method-DEF infos ... ");
 		methodDEFs = new HashMap<>();
 		for (JavaClass[] classArray: filesClasses) {
 			for (JavaClass cls : classArray) {
@@ -99,7 +99,7 @@ public class JavaDDGBuilder {
 				}
 			}
 		}
-		System.out.println("Done.");
+		Logger.info("Done.");
 		
 		// Analyze method DEF information for imported libraries
 		Logger.setEnabled(false);
@@ -115,7 +115,7 @@ public class JavaDDGBuilder {
 		for (int i = 0; i < parseTrees.length; ++i)
 			pdNodes[i] = new IdentityHashMap<>();
 		//
-		System.out.print("\nIterative DEF-USE analysis ... ");
+		Logger.info("\nIterative DEF-USE analysis ... ");
 		boolean changed;
 		int iteration = 0;
 		do {
@@ -127,25 +127,25 @@ public class JavaDDGBuilder {
 				defUse.visit(parseTrees[i]);
 				changed |= defUse.changed;
 			}
-			Logger.log("Iteration #" + iteration + ": " + (changed ? "CHANGED" : "NO-CHANGE"));
-			Logger.log("\n========================================\n");
+			Logger.debug("Iteration #" + iteration + ": " + (changed ? "CHANGED" : "NO-CHANGE"));
+			Logger.debug("\n========================================\n");
 		} while (changed);
-		System.out.println("Done.");
+		Logger.info("Done.");
 		
 		// Build control-flow graphs for all Java files including the extracted DEF-USE info ...
-		System.out.print("\nExtracting CFGs ... ");
+		Logger.info("\nExtracting CFGs ... ");
 		ControlFlowGraph[] cfgs = new ControlFlowGraph[files.length];
 		for (int i = 0; i < files.length; ++i) 
 			cfgs[i] = JavaCFGBuilder.build(files[i].getName(), parseTrees[i], "pdnode", pdNodes[i]);
-		System.out.println("Done.");
+		Logger.info("Done.");
 		
 		// Finally, traverse all control-flow paths and draw data-flow dependency edges ...
-		System.out.print("\nAdding data-flow edges ... ");
+		Logger.info("\nAdding data-flow edges ... ");
 		for (int i = 0; i < files.length; ++i) {
 			addDataFlowEdges(cfgs[i], ddgs[i]);
 			ddgs[i].attachCFG(cfgs[i]);
 		}
-		System.out.println("Done.");
+		Logger.info("Done.");
 		
 		return ddgs;
 	}
@@ -155,7 +155,7 @@ public class JavaDDGBuilder {
 	 */
 	private static void analyzeImportsDEF(List<JavaClass[]> filesClasses) throws IOException {
 		// Extract the import strings
-		System.out.print("\nExtracting & Parsing imports ... ");
+		Logger.info("\nExtracting & Parsing imports ... ");
 		Set<String> rawImports = new LinkedHashSet<>();
 		rawImports.add("java.lang.*");
 		for (JavaClass[] classes: filesClasses) 
@@ -208,7 +208,7 @@ public class JavaDDGBuilder {
 				}
 			}
 		}
-		System.out.println("Done.");
+		Logger.info("Done.");
 		// 
 		for (JavaClass[] classArray: importsClassInfos) {
 			for (JavaClass cls : classArray) {
@@ -226,7 +226,7 @@ public class JavaDDGBuilder {
 			}
 		}
 		//
-		System.out.print("\nAnalyzing imports DEF-USE ... ");
+		Logger.info("\nAnalyzing imports DEF-USE ... ");
 		Map<ParserRuleContext, Object> dummyMap = new HashMap<>();
 		DataDependenceGraph dummyDDG = new DataDependenceGraph("Dummy.java");
 		boolean changed;
@@ -243,7 +243,7 @@ public class JavaDDGBuilder {
 				++i;
 			}
 		} while (changed);
-		System.out.println("Done.");
+		Logger.info("Done.");
 		//
 		dummyDDG = null;
 		dummyMap.clear();
@@ -297,7 +297,7 @@ public class JavaDDGBuilder {
 				}
 				PDNode defNode = (PDNode) defCFNode.getProperty("pdnode");
 				if (defNode == null) {
-					//Logger.log("No PDNode: " + defCFNode);
+					//Logger.debug("No PDNode: " + defCFNode);
 					continue;
 				}
 				if (defNode.getAllDEFs().length == 0) 
@@ -317,7 +317,7 @@ public class JavaDDGBuilder {
 						useCFNode = useTraversal.next();
 						PDNode useNode = (PDNode) useCFNode.getProperty("pdnode");
 						if (useNode == null) {
-							//Logger.log("No PDNode: " + useCFNode);
+							//Logger.debug("No PDNode: " + useCFNode);
 							continue;
 						}
 						if (useNode.hasDEF(def))
@@ -357,7 +357,7 @@ public class JavaDDGBuilder {
 		
 		public DefUseVisitor(int iter, JavaClass[] classInfos, 
 				DataDependenceGraph ddg, Map<ParserRuleContext, Object> pdNodes) {
-			Logger.log("FILE IS: " + currentFile);
+			Logger.debug("FILE IS: " + currentFile);
 			this.ddg = ddg;
 			changed = false;
 			iteration = iter;
@@ -374,47 +374,47 @@ public class JavaDDGBuilder {
 		}
 		
 		private void analyseDefUse(PDNode node, ParseTree expression) {
-			Logger.log("--- ANALYSIS ---");
-			Logger.log(node.toString());
+			Logger.debug("--- ANALYSIS ---");
+			Logger.debug(node.toString());
 			analysisVisit = true;
 			String expr = visit(expression);
-			Logger.log(expr);
+			Logger.debug(expr);
 			//
 			StringBuilder locVarsStr = new StringBuilder(256);
 			locVarsStr.append("LOCAL VARS = [");
 			for (JavaField lv: localVars)
 				locVarsStr.append(lv.TYPE).append(' ').append(lv.NAME).append(", ");
 			locVarsStr.append("]");
-			Logger.log(locVarsStr.toString());
+			Logger.debug(locVarsStr.toString());
 			//
 			if (isUsableExpression(expr)) {
 				useList.add(expr);
-				Logger.log("USABLE");
+				Logger.debug("USABLE");
 			}
 			analysisVisit = false;
-			Logger.log("Changed = " + changed);
-			Logger.log("DEFs = " + Arrays.toString(node.getAllDEFs()));
-			Logger.log("USEs = " + Arrays.toString(node.getAllUSEs()));
+			Logger.debug("Changed = " + changed);
+			Logger.debug("DEFs = " + Arrays.toString(node.getAllDEFs()));
+			Logger.debug("USEs = " + Arrays.toString(node.getAllUSEs()));
 			for (String def: defList) {
 				int status = isDefined(def);
 				if (status > -1) {
 					if (status < 100) {
 						methodDefInfo.setArgDEF(status, true);
-						Logger.log("Method defines argument #" + status);
+						Logger.debug("Method defines argument #" + status);
 					} else if (status == FIELD) {
 						methodDefInfo.setStateDEF(true);
 						if (def.startsWith("this."))
 							def = def.substring(5);
 						def = "$THIS." + def;
-						Logger.log("Method defines object state.");
+						Logger.debug("Method defines object state.");
 					}
 					changed |= node.addDEF(def);
 				}
 				else
-					Logger.log(def + " is not defined!");
+					Logger.debug(def + " is not defined!");
 			}
-			Logger.log("Changed = " + changed);
-			Logger.log("DEFs = " + Arrays.toString(node.getAllDEFs()));
+			Logger.debug("Changed = " + changed);
+			Logger.debug("DEFs = " + Arrays.toString(node.getAllDEFs()));
 			//
 			for (String use: useList) {
 				int status = isDefined(use);
@@ -426,10 +426,10 @@ public class JavaDDGBuilder {
 					}
 					changed |= node.addUSE(use);
 				} else
-					Logger.log(use + " is not defined!");
+					Logger.debug(use + " is not defined!");
 			}
-			Logger.log("Changed = " + changed);
-			Logger.log("USEs = " + Arrays.toString(node.getAllUSEs()));
+			Logger.debug("Changed = " + changed);
+			Logger.debug("USEs = " + Arrays.toString(node.getAllUSEs()));
 			//
 			for (String flow: selfFlowList) {
 				int status = isDefined(flow);
@@ -441,14 +441,14 @@ public class JavaDDGBuilder {
 					}
 					changed |= node.addSelfFlow(flow);
 				} else
-					Logger.log(flow + " is not defined!");
+					Logger.debug(flow + " is not defined!");
 			}
-			Logger.log("Changed = " + changed);
-			Logger.log("SELF_FLOWS = " + Arrays.toString(node.getAllSelfFlows()));
+			Logger.debug("Changed = " + changed);
+			Logger.debug("SELF_FLOWS = " + Arrays.toString(node.getAllSelfFlows()));
 			defList.clear();
 			useList.clear();
 			selfFlowList.clear();
-			Logger.log("----------------");
+			Logger.debug("----------------");
 		}
 		
 		/**
@@ -499,9 +499,10 @@ public class JavaDDGBuilder {
 					for (JavaField field: cls.getAllFields())
 						if (field.NAME.equals(id))
 							return field.TYPE;
-				debug("getType(" + id + ") : is USABLE but NOT DEFINED");
+				Logger.debug("getType(" + id + ") : is USABLE but NOT DEFINED");
 				return null;
 			} else {
+                Logger.debug("getType(" + id + ") : is NOT USABLE");
 				// might be:
 				// 'this'
 				// 'super'
@@ -528,25 +529,25 @@ public class JavaDDGBuilder {
 		 */
 		private MethodDefInfo findDefInfo(String callee, String name, JavaParser.ExpressionListContext ctx) {
 			List<MethodDefInfo> list = methodDEFs.get(name);
-			debug("METHOD NAME: " + name);
-			debug("#Found: " + (list == null ? 0 : list.size()));
+			Logger.debug("METHOD NAME: " + name);
+			Logger.debug("# found = " + (list == null ? 0 : list.size()));
 			//
 			if (list == null)
 				return null;
 			//
 			if (list.size() == 1) { // only one candidate
-				debug("SINGLE CANDIDATE");
+				Logger.debug("SINGLE CANDIDATE");
 				MethodDefInfo mtd = list.get(0);
 				// just check params-count to make sure
 				if (ctx != null && mtd.PARAM_TYPES != null &&
 						mtd.PARAM_TYPES.length != ctx.expression().size())
 					return null;
-				debug("WITH MATCHING PARAMS COUNT");
+				Logger.debug("WITH MATCHING PARAMS COUNT");
 				return mtd;
 			}
 			//
 			if (callee == null) { // no callee; so search for self methods
-				debug("NO CALLEE");
+				Logger.debug("NO CALLEE");
 				forEachDefInfo:
 				for (MethodDefInfo mtd : list) {
 					// check package-name
@@ -585,7 +586,7 @@ public class JavaDDGBuilder {
 					return mtd;
 				}
 			} else if (isDefined(callee) > -1) { // has a defined callee
-				debug("DEFINED CALLEE");
+				Logger.debug("DEFINED CALLEE");
 				String type = getType(callee);
 				JavaClass cls = allClassInfos.get(type);
 				if (cls != null && cls.hasMethod(name)) {
@@ -619,14 +620,14 @@ public class JavaDDGBuilder {
 						}
 						return mtd;
 					}
-					debug("METHOD DEF INFO NOT FOUND!");
+					Logger.debug("METHOD DEF INFO NOT FOUND!");
 				} else {
-					debug((cls == null ? 
+					Logger.debug((cls == null ? 
 							"CLASS OF TYPE " + type + " NOT FOUND!" : 
 							"CLASS HAS NO SUCH METHOD!"));
 				}
 			} else { // has an undefined callee
-				debug("UNDEFINED CALLEE.");
+				Logger.debug("UNDEFINED CALLEE.");
 				//
 				// TODO: use a global retType for visiting expressions
 				//
@@ -1433,8 +1434,8 @@ public class JavaDDGBuilder {
 			String callee = null;
 			String callExpression = visit(ctx.expression());
 			String methodName = callExpression;
-			debug("---");
-			debug("CALL EXPR : " + methodName);
+			Logger.debug("---");
+			Logger.debug("CALL EXPR : " + methodName);
 			//
 			int start = 0, lastDot = callExpression.lastIndexOf('.');
 			if (lastDot > 0) {
@@ -1444,20 +1445,20 @@ public class JavaDDGBuilder {
 				//else
 				//	++start;
 				callee = callExpression.substring(start, lastDot);
-				debug("HAS CALLEE : " + callee);
+				Logger.debug("HAS CALLEE : " + callee);
 				if (isUsableExpression(callee)) {
 					useList.add(callee);
-					debug("CALLEE IS USABLE");
+					Logger.debug("CALLEE IS USABLE");
 				}
 				methodName = callExpression.substring(lastDot + 1);
 			} else {
-				debug("NO CALLEE");
+				Logger.debug("NO CALLEE");
 				methodName = callExpression;
 			}
 			//
 			MethodDefInfo defInfo = findDefInfo(callee, methodName, ctx.expressionList());
-			debug("FIND DEF RESULT: " + defInfo);
-			debug("---");
+			Logger.debug("FIND DEF RESULT: " + defInfo);
+			Logger.debug("---");
 			if (callee != null && defInfo != null && defInfo.doesStateDEF())
 				defList.add(callee);
 			return callExpression + '(' + visitMethodArgs(ctx.expressionList(), defInfo) + ')';
@@ -1930,15 +1931,6 @@ public class JavaDDGBuilder {
 			return ctx.start.getInputStream().getText(interval);
 		}
 		
-		private void debug(String s) {
-			//if (activeClasses.peek().NAME.equals("Test"))
-				//System.out.println(s);
-				Logger.log(s);
-		}
-		
-		private void debug(Object obj) {
-			debug(obj.toString());
-		}
 	}
 	
 }
