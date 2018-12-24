@@ -14,16 +14,19 @@ import org.junit.*;
  */
 public class BasicAnalysisTests {
     
-    private final String JAVA_SRC_DIR = "src/test/resources/java/basic";
+    private final String JAVA_SRC_DIR = "src/test/resources/java/basic/";
+    private static final String OUTPUT_DIR = "out/java/basic/";
     
     @BeforeClass
     public static void cleanUp() {
-        File out = new File("out/");
-        for (File file: out.listFiles()) {
-            if (file.isFile())
-                file.delete();
-            else
-                deleteDir(file);
+        File out = new File(OUTPUT_DIR);
+        if (out.exists()) {
+            for (File file : out.listFiles()) {
+                if (file.isFile())
+                    file.delete();
+                else
+                    deleteDir(file);
+            }
         }
     }
     
@@ -41,7 +44,7 @@ public class BasicAnalysisTests {
     
     @Test
     public void javaCFGTest() {
-        String outDir = "out/java/basic/cfg/";
+        String outDir = OUTPUT_DIR + "cfg/";
         String[] args = {"-cfg", "-outdir", outDir, JAVA_SRC_DIR};
         Main.main(args);
         //
@@ -52,7 +55,7 @@ public class BasicAnalysisTests {
     
     @Test
     public void javaPDGTest() {
-        String outDir = "out/java/basic/pdg/";
+        String outDir = OUTPUT_DIR + "pdg/";
         String[] args = {"-pdg", "-outdir", outDir, JAVA_SRC_DIR};
         Main.main(args);
         //
