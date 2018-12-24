@@ -8,13 +8,13 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
- * Tests for different types of analysis.
+ * Tests for different types of analyses using basic test-cases.
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class AnalysisTest {
+public class BasicAnalysisTests {
     
-    private final String JAVA_SRC_DIR = "src/test/resources/java/progex";
+    private final String JAVA_SRC_DIR = "src/test/resources/java/basic";
     
     @BeforeClass
     public static void cleanUp() {
@@ -41,7 +41,7 @@ public class AnalysisTest {
     
     @Test
     public void javaCFGTest() {
-        String outDir = "out/java/cfg/";
+        String outDir = "out/java/basic/cfg/";
         String[] args = {"-cfg", "-outdir", outDir, JAVA_SRC_DIR};
         Main.main(args);
         //
@@ -52,7 +52,7 @@ public class AnalysisTest {
     
     @Test
     public void javaPDGTest() {
-        String outDir = "out/java/pdg/";
+        String outDir = "out/java/basic/pdg/";
         String[] args = {"-pdg", "-outdir", outDir, JAVA_SRC_DIR};
         Main.main(args);
         //
