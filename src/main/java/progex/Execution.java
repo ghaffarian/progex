@@ -24,11 +24,13 @@ public class Execution {
 	
 	private final ArrayList<Analysis> analysisTypes;
 	private final ArrayList<String> inputPaths;
+    private boolean debugMode;
 	private String outputDir;
 	private Languages lang;
 	private Formats format;
 	
 	public Execution() {
+        debugMode = false;
 		analysisTypes = new ArrayList<>();
 		inputPaths = new ArrayList<>();
 		lang = Languages.JAVA;
@@ -111,6 +113,10 @@ public class Execution {
 	public void setLanguage(Languages lang) {
 		this.lang = lang;
 	}
+    
+    public void setDebugMode(boolean isDebug) {
+        debugMode = isDebug;
+    }
 	
 	public void setOutputFormat(Formats fmt) {
 		format = fmt;
@@ -216,8 +222,10 @@ public class Execution {
 						for (ProgramDependeceGraph pdg: PDGBuilder.buildForAll(lang.name, filePaths)) {
 							pdg.CDS.export(format.name, outputDir);
 							pdg.DDS.export(format.name, outputDir);
-							pdg.DDS.getCFG().export(format.name, outputDir);
-							pdg.DDS.printAllNodesUseDefs(Logger.getStream());
+                            if (debugMode) {
+                                pdg.DDS.getCFG().export(format.name, outputDir);
+                                pdg.DDS.printAllNodesUseDefs(Logger.Level.DEBUG);
+                            }
 						}
 					} catch (IOException ex) {
 						Logger.error(ex);

@@ -13,6 +13,7 @@ import progex.utils.Logger;
  */
 public class CLI {
 	
+    private boolean debugMode;
 	private final Execution exec;
 	
 	public CLI() {
@@ -107,9 +108,10 @@ public class CLI {
 							break;
 						//
 						case "debug":
+                            exec.setDebugMode(true);
                             try {
                                 Logger.setActiveLevel(Logger.Level.DEBUG);
-                                progex.utils.Logger.redirectStandardError("PROGEX.err");
+                                progex.utils.Logger.redirectStandardError("progex.err");
                             } catch (IOException ex) {
                                 Logger.error(ex);
                             }
