@@ -61,38 +61,45 @@ USAGE:
 
    java -jar PROGEX.jar [-OPTIONS...] /path/to/program/src
 
+
 OPTIONS:
 
-   -help    Print this help message
-   -outdir  Specify path of output directory
-   -format  Specify output format; either 'JSON' or 'DOT'
-   -lang    Specify language of program source codes
+   -help      Print this help message
+   -outdir    Specify path of output directory
+   -format    Specify output format; either 'JSON' or 'DOT'
+   -lang      Specify language of program source codes
 
-   -ast     Perform AST (Abstract Syntax Tree) analysis
-   -cfg     Perfomt CFG (Control Flow Graph) analysis
-   -icfg    Perform ICFG (Interprocedural CFG) analysis
-   -info    Analyze and extract detailed information about program source code
-   -pdg     Perform PDG (Program Dependence Graph) analysis
+   -ast       Perform AST (Abstract Syntax Tree) analysis
+   -cfg       Perfomt CFG (Control Flow Graph) analysis
+   -icfg      Perform ICFG (Interprocedural CFG) analysis
+   -info      Analyze and extract detailed information about program source code
+   -pdg       Perform PDG (Program Dependence Graph) analysis
+
+   -debug     Enable more detailed logs (only for debugging)
+   -timetags  Enable time-tags and labels for logs (only for debugging)
+
 
 DEFAULTS:
 
    - If not specified, the default output directory is the current working directory.
    - If not specified, the default output format is DOT.
    - If not specified, the default language is Java.
-   - There is no default value for analysis types.
+   - There is no default value for analysis type.
    - There is no default value for input directory path.
+
 
 EXAMPLES:
 
-   java -jar PROGEX.jar -cfg -lang java -format dot  /home/user/program/src
+   java -jar PROGEX.jar -cfg -lang java -format dot  /home/user/project/src
 
       This example will extract the CFG of all Java source files in the given path and 
       will export all extracted graphs as DOT files in the current working directory.
 
-   java -jar PROGEX.jar -outdir D:\outputs -format json -pdg  C:\program\src
+   java -jar PROGEX.jar -outdir D:\outputs -format json -pdg  C:\Project\src
 
       This example will extract the PDGs of all Java source files in the given path and 
       will export all extracted graphs as JSON files in the given output directory.
+
 
 NOTES:
 
@@ -102,7 +109,7 @@ NOTES:
      crash!
 
    - Analyzing large programs requires high volumes of system memory, so 
-     it is necessary to increase the maximum available memory to PROGEX.
+     it is necessary to increase the maximum available memory for PROGEX.
 
      In the example below, the -Xmx option of the JVM is used to provide PROGEX 
      with 5 giga-bytes of system memory; which is required for the PDG analysis 
@@ -110,7 +117,6 @@ NOTES:
      is possible on a computer with at least 8 giga-bytes of RAM:
 
         java -Xmx5G -jar PROGEX.jar -pdg ...
-
 ```
 
 
