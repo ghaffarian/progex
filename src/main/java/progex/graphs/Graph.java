@@ -114,6 +114,19 @@ public class Graph<V,E> {
     }
     
     /**
+     * Add an edge to this graph, connecting the given vertices.
+     * If a new edge can be added, the label of this new edge will be 'null'.
+     * Both vertices (source and target) of the edge must be in the graph
+     * otherwise, an exception is thrown indicating this issue.
+     * 
+     * @return true if a new edge is added, or
+     *         false if such an edge is already in the graph.
+     */
+    public boolean addEdge(V src, V trgt) {
+        return addEdge(new Edge<>(src, null, trgt));
+    }
+    
+    /**
      * Remove the given edge from this graph.
      * 
      * @return true if the vertex is removed, or
