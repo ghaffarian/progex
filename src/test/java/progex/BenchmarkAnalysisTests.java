@@ -43,25 +43,36 @@ public class BenchmarkAnalysisTests {
     }
     
     @Test
+    public void javaASTreeTest() {
+        String outDir = OUTPUT_DIR + "AST/";
+        String[] args = {"-debug", "-ast", "-outdir", outDir, JAVA_SRC_DIR};
+        Main.main(args);
+        //
+        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
+        String[] outFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-AST.dot");
+        assertEquals(testFiles.length, outFiles.length);
+    }
+    
+    @Test
     public void javaCFGTest() {
-        String outDir = OUTPUT_DIR + "cfg/";
+        String outDir = OUTPUT_DIR + "CFG/";
         String[] args = {"-cfg", "-outdir", outDir, JAVA_SRC_DIR};
         Main.main(args);
         //
         String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
-        String[] outFiles = FileUtils.listFilesWithSuffix(new String[]{outDir}, "-CFG.dot");
+        String[] outFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-CFG.dot");
         assertEquals(testFiles.length, outFiles.length);
     }
     
     @Test
     public void javaPDGTest() {
-        String outDir = OUTPUT_DIR + "pdg/";
+        String outDir = OUTPUT_DIR + "PDG/";
         String[] args = {"-pdg", "-outdir", outDir, JAVA_SRC_DIR};
         Main.main(args);
         //
         String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
-        String[] outDataFiles = FileUtils.listFilesWithSuffix(new String[]{outDir}, "-PDG-DATA.dot");
-        String[] outCtrlFiles = FileUtils.listFilesWithSuffix(new String[]{outDir}, "-PDG-CTRL.dot");
+        String[] outDataFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-PDG-DATA.dot");
+        String[] outCtrlFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-PDG-CTRL.dot");
         assertEquals(testFiles.length, outDataFiles.length);
         assertEquals(testFiles.length, outCtrlFiles.length);
     }
