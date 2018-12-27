@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import progex.graphs.ast.ASTBuilder;
+import progex.graphs.ast.AbstractSyntaxTree;
 import progex.graphs.cfg.CFGBuilder;
 import progex.graphs.cfg.ControlFlowGraph;
 import progex.graphs.cfg.ICFGBuilder;
@@ -187,6 +189,20 @@ public class Execution {
 			Logger.debug(SystemUtils.getMemoryStats());
 
 			switch (analysis.type) {
+				//
+				case "AST":
+					Logger.info("\nAbstract Syntax Analysis");
+					Logger.info("========================");
+					Logger.info("START: " + Logger.time() + '\n');
+					for (String srcFile : filePaths) {
+						try {
+                            AbstractSyntaxTree ast = ASTBuilder.build(lang.name, srcFile);
+							ast.export(format.name, outputDir);
+						} catch (IOException ex) {
+							Logger.error(ex);
+						}
+					}
+					break;
 				//
 				case "CFG":
 					Logger.info("\nControl-Flow Analysis");
