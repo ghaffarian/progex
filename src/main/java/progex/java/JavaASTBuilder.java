@@ -110,9 +110,8 @@ public class JavaASTBuilder {
         @Override
         public String visitPackageDeclaration(JavaParser.PackageDeclarationContext ctx) {
             // packageDeclaration :  annotation* 'package' qualifiedName ';'
-            String packageName = ctx.qualifiedName().getText();
             ASNode node = new ASNode(ASNode.Type.PACKAGE);
-            node.setValue(packageName);
+            node.setValue(ctx.qualifiedName().getText());
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
             return null;
@@ -173,9 +172,8 @@ public class JavaASTBuilder {
             AST.addEdge(classNode, nameNode);
             //
             if (ctx.typeType() != null) {
-                String extend = ctx.typeType().getText();
                 ASNode extendsNode = new ASNode(ASNode.Type.EXTENDS);
-                extendsNode.setValue(extend);
+                extendsNode.setValue(ctx.typeType().getText());
                 AST.addVertex(extendsNode);
                 AST.addEdge(classNode, extendsNode);
             }
@@ -375,9 +373,8 @@ public class JavaASTBuilder {
             AST.addVertex(retNode);
             AST.addEdge(parentStack.peek(), retNode);
             //
-            String methodName = ctx.Identifier().getText();
             ASNode nameNode = new ASNode(ASNode.Type.NAME);
-            nameNode.setValue(methodName);
+            nameNode.setValue(ctx.Identifier().getText());
             AST.addVertex(nameNode);
             AST.addEdge(parentStack.peek(), nameNode);
             //
@@ -393,13 +390,13 @@ public class JavaASTBuilder {
                     AST.addEdge(parentStack.peek(), varNode);
                     //
                     ASNode type = new ASNode(ASNode.Type.TYPE);
-                    AST.addVertex(type);
                     type.setValue(paramctx.typeType().getText());
+                    AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
                     ASNode name = new ASNode(ASNode.Type.NAME);
-                    AST.addVertex(name);
                     name.setValue(paramctx.variableDeclaratorId().getText());
+                    AST.addVertex(name);
                     AST.addEdge(varNode, name);
                 }
                 if (ctx.formalParameters().formalParameterList().lastFormalParameter() != null) {
@@ -533,7 +530,7 @@ public class JavaASTBuilder {
             AST.addEdge(parentStack.peek(), ifNode);
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
-            cond.setValue(ctx.parExpression().getText());
+            cond.setValue(getOriginalCodeText(ctx.parExpression().expression()));
             AST.addVertex(cond);
             AST.addEdge(ifNode, cond);
             //
@@ -570,20 +567,19 @@ public class JavaASTBuilder {
                 AST.addVertex(forNode);
                 AST.addEdge(parentStack.peek(), forNode);
                 //
-                ASNode initType = new ASNode(ASNode.Type.TYPE);
+                ASNode varType = new ASNode(ASNode.Type.TYPE);
+                varType.setValue(ctx.forControl().enhancedForControl().typeType().getText());
+                AST.addVertex(varType);
+                AST.addEdge(forNode, varType);
+                //
                 ASNode initId = new ASNode(ASNode.Type.NAME);
-                AST.addVertex(initType);
+                initId.setValue(ctx.forControl().enhancedForControl().variableDeclaratorId().getText());
                 AST.addVertex(initId);
-                String typetype = ctx.forControl().enhancedForControl().typeType().getText();
-                String id = ctx.forControl().enhancedForControl().variableDeclaratorId().getText();
-                initType.setValue(typetype);
-                initId.setValue(id);
-                AST.addEdge(forNode, initType);
                 AST.addEdge(forNode, initId);
                 //
-                ASNode expr = new ASNode(ASNode.Type.STATEMENT);
+                ASNode expr = new ASNode(ASNode.Type.IN);
+                expr.setValue(getOriginalCodeText(ctx.forControl().enhancedForControl().expression()));
                 AST.addVertex(expr);
-                expr.setValue(ctx.forControl().enhancedForControl().expression().getText());
                 AST.addEdge(forNode, expr);
             } 
             // Classic for(init; expr; update)
@@ -595,18 +591,18 @@ public class JavaASTBuilder {
                 // for init
                 if (ctx.forControl().forInit() != null) {
                     ASNode forInit = new ASNode(ASNode.Type.FOR_INIT);
-                    forInit.setValue(ctx.forControl().forInit().getText());
+                    forInit.setValue(getOriginalCodeText(ctx.forControl().forInit()));
                     AST.addVertex(forInit);
                     AST.addEdge(forNode, forInit);
                 }
                 // for expr
                 ASNode forExpr = new ASNode(ASNode.Type.CONDITION);
-                forExpr.setValue(ctx.forControl().expression().getText());
+                forExpr.setValue(getOriginalCodeText(ctx.forControl().expression()));
                 AST.addVertex(forExpr);
                 AST.addEdge(forNode, forExpr);
                 // for update
                 ASNode forUpdate = new ASNode(ASNode.Type.FOR_UPDATE);
-                forUpdate.setValue(ctx.forControl().forUpdate().getText());
+                forUpdate.setValue(getOriginalCodeText(ctx.forControl().forUpdate()));
                 AST.addVertex(forUpdate);
                 AST.addEdge(forNode, forUpdate);
             }
@@ -628,7 +624,7 @@ public class JavaASTBuilder {
             AST.addEdge(parentStack.peek(), whileNode);
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
-            cond.setValue(getOriginalCodeText(ctx.parExpression()));
+            cond.setValue(getOriginalCodeText(ctx.parExpression().expression()));
             AST.addVertex(cond);
             AST.addEdge(whileNode, cond);
             //
@@ -649,7 +645,7 @@ public class JavaASTBuilder {
             AST.addEdge(parentStack.peek(), doWhileNode);
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
-            cond.setValue(getOriginalCodeText(ctx.parExpression()));
+            cond.setValue(getOriginalCodeText(ctx.parExpression().expression()));
             AST.addVertex(cond);
             AST.addEdge(doWhileNode, cond);
             //
@@ -742,7 +738,7 @@ public class JavaASTBuilder {
                 AST.addEdge(varNode, resName);
                 //
                 ASNode resInit = new ASNode(ASNode.Type.INIT_VALUE);
-                resInit.setValue(resctx.expression().getText());
+                resInit.setValue(getOriginalCodeText(resctx.expression()));
                 AST.addVertex(resInit);
                 AST.addEdge(varNode, resInit);
             }
@@ -803,7 +799,7 @@ public class JavaASTBuilder {
             AST.addEdge(parentStack.peek(), switchNode);
             //
             ASNode varName = new ASNode(ASNode.Type.NAME);
-            varName.setValue(ctx.parExpression().getText());
+            varName.setValue(getOriginalCodeText(ctx.parExpression().expression()));
             AST.addVertex(varName);
             AST.addEdge(switchNode, varName);
             //
@@ -819,7 +815,7 @@ public class JavaASTBuilder {
                     parentStack.pop();
                 }
             }
-            if (ctx.switchLabel() != null) {
+            if (ctx.switchLabel() != null && ctx.switchLabel().size() > 0) {
                 ASNode blockNode = new ASNode(ASNode.Type.BLOCK);
                 AST.addVertex(blockNode);
                 for (JavaParser.SwitchLabelContext lblctx : ctx.switchLabel())
