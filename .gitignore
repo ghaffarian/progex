@@ -1,7 +1,6 @@
 /archive/
 /target/
 /out/
-/res/
 
 /src/test/resources/java/juliet*
 /src/test/resources/java/benchmark*
