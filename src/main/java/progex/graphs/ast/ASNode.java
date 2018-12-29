@@ -45,6 +45,7 @@ public class ASNode {
         FOR_INIT    ("INIT"),
         FOR_UPDATE  ("UPDATE"),
         FOR_EACH    ("FOR-EACH"),
+        IN          ("IN"),
         WHILE       ("WHILE"),
         DO_WHILE    ("DO-WHILE"),
         TRY         ("TRY"),
