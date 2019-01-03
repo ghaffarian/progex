@@ -85,13 +85,14 @@ public class JavaASTBuilder {
         
         public AbstractSyntaxTree build(ParseTree tree) {
             JavaParser.CompilationUnitContext rootCntx = (JavaParser.CompilationUnitContext) tree;
-            AST.ROOT.setValue(new File(AST.FILE_PATH).getName());
+            AST.ROOT.setCode(new File(AST.FILE_PATH).getName());
             parentStack.push(AST.ROOT);
             if (rootCntx.packageDeclaration() != null)
                 visit(rootCntx.packageDeclaration());
             //
             if (rootCntx.importDeclaration() != null && rootCntx.importDeclaration().size() > 0) {
                 ASNode imports = new ASNode(ASNode.Type.IMPORTS);
+                imports.setLineOfCode(rootCntx.importDeclaration(0).getStart().getLine());
                 AST.addVertex(imports);
                 AST.addEdge(AST.ROOT, imports);
                 parentStack.push(imports);
@@ -111,7 +112,8 @@ public class JavaASTBuilder {
         public String visitPackageDeclaration(JavaParser.PackageDeclarationContext ctx) {
             // packageDeclaration :  annotation* 'package' qualifiedName ';'
             ASNode node = new ASNode(ASNode.Type.PACKAGE);
-            node.setValue(ctx.qualifiedName().getText());
+            node.setCode(ctx.qualifiedName().getText());
+            node.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
             return null;
@@ -127,7 +129,8 @@ public class JavaASTBuilder {
                 qualifiedName += ".*";
             }
             ASNode node = new ASNode(ASNode.Type.IMPORT);
-            node.setValue(qualifiedName);
+            node.setCode(qualifiedName);
+            node.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
             return null;
@@ -155,11 +158,13 @@ public class JavaASTBuilder {
             //   :  'class' Identifier typeParameters? 
             //      ('extends' typeType)? ('implements' typeList)? classBody
             ASNode classNode = new ASNode(ASNode.Type.CLASS);
+            classNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(classNode);
             AST.addEdge(parentStack.peek(), classNode);
             //
             ASNode modifierNode = new ASNode(ASNode.Type.MODIFIER);
-            modifierNode.setValue(typeModifier);
+            modifierNode.setCode(typeModifier);
+            modifierNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(modifierNode);
             AST.addEdge(classNode, modifierNode);
             //
@@ -167,24 +172,28 @@ public class JavaASTBuilder {
             String className = ctx.Identifier().getText();
             if (ctx.typeParameters() != null)
                 className += ctx.typeParameters().getText();
-            nameNode.setValue(className);
+            nameNode.setCode(className);
+            nameNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(nameNode);
             AST.addEdge(classNode, nameNode);
             //
             if (ctx.typeType() != null) {
                 ASNode extendsNode = new ASNode(ASNode.Type.EXTENDS);
-                extendsNode.setValue(ctx.typeType().getText());
+                extendsNode.setCode(ctx.typeType().getText());
+                extendsNode.setLineOfCode(ctx.typeType().getStart().getLine());
                 AST.addVertex(extendsNode);
                 AST.addEdge(classNode, extendsNode);
             }
             //
             if (ctx.typeList() != null) {
                 ASNode implementsNode = new ASNode(ASNode.Type.IMPLEMENTS);
+                implementsNode.setLineOfCode(ctx.typeList().getStart().getLine());
                 AST.addVertex(implementsNode);
                 AST.addEdge(classNode, implementsNode);
                 for (JavaParser.TypeTypeContext type : ctx.typeList().typeType()) {
                     ASNode node = new ASNode(ASNode.Type.INTERFACE);
-                    node.setValue(type.getText());
+                    node.setCode(type.getText());
+                    node.setLineOfCode(type.getStart().getLine());
                     AST.addVertex(node);
                     AST.addEdge(implementsNode, node);
                 }
@@ -215,6 +224,7 @@ public class JavaASTBuilder {
             //
             if (ctx.block() != null) {
                 ASNode staticBlock = new ASNode(ASNode.Type.STATIC_BLOCK);
+                staticBlock.setLineOfCode(ctx.block().getStart().getLine());
                 AST.addVertex(staticBlock);
                 AST.addEdge(parentStack.peek(), staticBlock);
                 parentStack.push(staticBlock);
@@ -229,6 +239,7 @@ public class JavaASTBuilder {
                 // Field member
                 if (ctx.memberDeclaration().fieldDeclaration() != null) {
                     ASNode fieldsNode = new ASNode(ASNode.Type.FIELD);
+                    fieldsNode.setLineOfCode(ctx.memberDeclaration().fieldDeclaration().getStart().getLine());
                     AST.addVertex(fieldsNode);
                     AST.addEdge(parentStack.peek(), fieldsNode);
                     parentStack.push(fieldsNode);
@@ -237,6 +248,7 @@ public class JavaASTBuilder {
                 } else if (ctx.memberDeclaration().constructorDeclaration() != null) {
                     // Constructor member
                     ASNode constructorNode = new ASNode(ASNode.Type.CONSTRUCTOR);
+                    constructorNode.setLineOfCode(ctx.memberDeclaration().constructorDeclaration().getStart().getLine());
                     AST.addVertex(constructorNode);
                     AST.addEdge(parentStack.peek(), constructorNode);
                     parentStack.push(constructorNode);
@@ -244,10 +256,11 @@ public class JavaASTBuilder {
                     parentStack.pop();
                 } else if (ctx.memberDeclaration().methodDeclaration() != null) {
                     // Method member
-                    ASNode methodsNode = new ASNode(ASNode.Type.METHOD);
-                    AST.addVertex(methodsNode);
-                    AST.addEdge(parentStack.peek(), methodsNode);
-                    parentStack.push(methodsNode);
+                    ASNode methodNode = new ASNode(ASNode.Type.METHOD);
+                    methodNode.setLineOfCode(ctx.memberDeclaration().methodDeclaration().getStart().getLine());
+                    AST.addVertex(methodNode);
+                    AST.addEdge(parentStack.peek(), methodNode);
+                    parentStack.push(methodNode);
                     visit(ctx.memberDeclaration().methodDeclaration());
                     parentStack.pop();
                 } else if (ctx.memberDeclaration().classDeclaration() != null) {
@@ -264,43 +277,51 @@ public class JavaASTBuilder {
             // constructorBody :  block
             //
             ASNode modifierNode = new ASNode(ASNode.Type.MODIFIER);
-            modifierNode.setValue(memberModifier);
+            modifierNode.setLineOfCode(ctx.getStart().getLine());
+            modifierNode.setCode(memberModifier);
             AST.addVertex(modifierNode);
             AST.addEdge(parentStack.peek(), modifierNode);
             //
             if (ctx.formalParameters().formalParameterList() != null) {
                 ASNode paramsNode = new ASNode(ASNode.Type.PARAMS);
+                paramsNode.setLineOfCode(ctx.formalParameters().getStart().getLine());
                 AST.addVertex(paramsNode);
                 AST.addEdge(parentStack.peek(), paramsNode);
                 parentStack.push(paramsNode);
                 for (JavaParser.FormalParameterContext paramctx: 
                         ctx.formalParameters().formalParameterList().formalParameter()) {
                     ASNode varNode = new ASNode(ASNode.Type.VARIABLE);
+                    varNode.setLineOfCode(paramctx.getStart().getLine());
                     AST.addVertex(varNode);
                     AST.addEdge(parentStack.peek(), varNode);
                     //
                     ASNode type = new ASNode(ASNode.Type.TYPE);
+                    type.setCode(paramctx.typeType().getText());
+                    type.setLineOfCode(paramctx.typeType().getStart().getLine());
                     AST.addVertex(type);
-                    type.setValue(paramctx.typeType().getText());
                     AST.addEdge(varNode, type);
                     //
                     ASNode name = new ASNode(ASNode.Type.NAME);
+                    name.setCode(paramctx.variableDeclaratorId().getText());
+                    name.setLineOfCode(paramctx.variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
-                    name.setValue(paramctx.variableDeclaratorId().getText());
                     AST.addEdge(varNode, name);
                 }
                 if (ctx.formalParameters().formalParameterList().lastFormalParameter() != null) {
                     ASNode varNode = new ASNode(ASNode.Type.VARIABLE);
+                    varNode.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().getStart().getLine());
                     AST.addVertex(varNode);
                     AST.addEdge(parentStack.peek(), varNode);
                     //
                     ASNode type = new ASNode(ASNode.Type.TYPE);
-                    type.setValue(ctx.formalParameters().formalParameterList().lastFormalParameter().typeType().getText());
+                    type.setCode(ctx.formalParameters().formalParameterList().lastFormalParameter().typeType().getText());
+                    type.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().typeType().getStart().getLine());
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
                     ASNode name = new ASNode(ASNode.Type.NAME);
-                    name.setValue(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getText());
+                    name.setCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getText());
+                    name.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
                 }
@@ -308,6 +329,7 @@ public class JavaASTBuilder {
             }
             //
             ASNode bodyBlock = new ASNode(ASNode.Type.BLOCK);
+            bodyBlock.setLineOfCode(ctx.constructorBody().block().getStart().getLine());
             AST.addVertex(bodyBlock);
             AST.addEdge(parentStack.peek(), bodyBlock);
             parentStack.push(bodyBlock);
@@ -324,23 +346,27 @@ public class JavaASTBuilder {
             //
             for (JavaParser.VariableDeclaratorContext varctx : ctx.variableDeclarators().variableDeclarator()) {
                 ASNode modifierNode = new ASNode(ASNode.Type.MODIFIER);
-                modifierNode.setValue(memberModifier);
+                modifierNode.setCode(memberModifier);
+                modifierNode.setLineOfCode(ctx.getStart().getLine());
                 AST.addVertex(modifierNode);
                 AST.addEdge(parentStack.peek(), modifierNode);
                 //
                 ASNode type = new ASNode(ASNode.Type.TYPE);
+                type.setCode(ctx.typeType().getText());
+                type.setLineOfCode(ctx.typeType().getStart().getLine());
                 AST.addVertex(type);
-                type.setValue(ctx.typeType().getText());
                 AST.addEdge(parentStack.peek(), type);
                 //
                 ASNode name = new ASNode(ASNode.Type.NAME);
+                name.setCode(varctx.variableDeclaratorId().getText());
+                name.setLineOfCode(varctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(name);
-                name.setValue(varctx.variableDeclaratorId().getText());
                 AST.addEdge(parentStack.peek(), name);
                 //
                 if (varctx.variableInitializer() != null) {
                     ASNode initNode = new ASNode(ASNode.Type.INIT_VALUE);
-                    initNode.setValue("= " + getOriginalCodeText(varctx.variableInitializer()));
+                    initNode.setCode("= " + getOriginalCodeText(varctx.variableInitializer()));
+                    initNode.setLineOfCode(varctx.variableInitializer().getStart().getLine());
                     AST.addVertex(initNode);
                     AST.addEdge(parentStack.peek(), initNode);
                 }
@@ -364,53 +390,63 @@ public class JavaASTBuilder {
             //  lastFormalParameter :  variableModifier* typeType '...' variableDeclaratorId
             //
             ASNode modifierNode = new ASNode(ASNode.Type.MODIFIER);
-            modifierNode.setValue(memberModifier);
+            modifierNode.setCode(memberModifier);
+            modifierNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(modifierNode);
             AST.addEdge(parentStack.peek(), modifierNode);
             //
             ASNode retNode = new ASNode(ASNode.Type.RETURN);
-            retNode.setValue(ctx.getChild(0).getText());
+            retNode.setCode(ctx.getChild(0).getText());
+            retNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(retNode);
             AST.addEdge(parentStack.peek(), retNode);
             //
             ASNode nameNode = new ASNode(ASNode.Type.NAME);
-            nameNode.setValue(ctx.Identifier().getText());
+            nameNode.setCode(ctx.Identifier().getText());
+            nameNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(nameNode);
             AST.addEdge(parentStack.peek(), nameNode);
             //
             if (ctx.formalParameters().formalParameterList() != null) {
                 ASNode paramsNode = new ASNode(ASNode.Type.PARAMS);
+                paramsNode.setLineOfCode(ctx.formalParameters().getStart().getLine());
                 AST.addVertex(paramsNode);
                 AST.addEdge(parentStack.peek(), paramsNode);
                 parentStack.push(paramsNode);
                 for (JavaParser.FormalParameterContext paramctx: 
                         ctx.formalParameters().formalParameterList().formalParameter()) {
                     ASNode varNode = new ASNode(ASNode.Type.VARIABLE);
+                    varNode.setLineOfCode(paramctx.getStart().getLine());
                     AST.addVertex(varNode);
                     AST.addEdge(parentStack.peek(), varNode);
                     //
                     ASNode type = new ASNode(ASNode.Type.TYPE);
-                    type.setValue(paramctx.typeType().getText());
+                    type.setCode(paramctx.typeType().getText());
+                    type.setLineOfCode(paramctx.typeType().getStart().getLine());
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
                     ASNode name = new ASNode(ASNode.Type.NAME);
-                    name.setValue(paramctx.variableDeclaratorId().getText());
+                    name.setCode(paramctx.variableDeclaratorId().getText());
+                    name.setLineOfCode(paramctx.variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
                 }
                 if (ctx.formalParameters().formalParameterList().lastFormalParameter() != null) {
                     ASNode varNode = new ASNode(ASNode.Type.VARIABLE);
+                    varNode.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().getStart().getLine());
                     AST.addVertex(varNode);
                     AST.addEdge(parentStack.peek(), varNode);
                     //
                     ASNode type = new ASNode(ASNode.Type.TYPE);
-                    type.setValue(ctx.formalParameters().formalParameterList().lastFormalParameter().typeType().getText());
+                    type.setCode(ctx.formalParameters().formalParameterList().lastFormalParameter().typeType().getText());
+                    type.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().typeType().getStart().getLine());
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
                     ASNode name = new ASNode(ASNode.Type.NAME);
-                    name.setValue(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getText());
+                    name.setCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getText());
+                    name.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
                 }
@@ -419,6 +455,7 @@ public class JavaASTBuilder {
             //
             if (ctx.methodBody() != null) {
                 ASNode methodBody = new ASNode(ASNode.Type.BLOCK);
+                methodBody.setLineOfCode(ctx.methodBody().getStart().getLine());
                 AST.addVertex(methodBody);
                 AST.addEdge(parentStack.peek(), methodBody);
                 parentStack.push(methodBody);
@@ -436,22 +473,26 @@ public class JavaASTBuilder {
             //
             for (JavaParser.VariableDeclaratorContext varctx: ctx.variableDeclarators().variableDeclarator()) {
                 ASNode varNode = new ASNode(ASNode.Type.VARIABLE);
+                varNode.setLineOfCode(varctx.getStart().getLine());
                 AST.addVertex(varNode);
                 AST.addEdge(parentStack.peek(), varNode);
                 //
                 ASNode typeNode = new ASNode(ASNode.Type.TYPE);
-                typeNode.setValue(ctx.typeType().getText());
+                typeNode.setCode(ctx.typeType().getText());
+                typeNode.setLineOfCode(ctx.typeType().getStart().getLine());
                 AST.addVertex(typeNode);
                 AST.addEdge(varNode, typeNode);
                 //
                 ASNode nameNode = new ASNode(ASNode.Type.NAME);
-                nameNode.setValue(varctx.variableDeclaratorId().getText());
+                nameNode.setCode(varctx.variableDeclaratorId().getText());
+                nameNode.setLineOfCode(varctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(nameNode);
                 AST.addEdge(varNode, nameNode);
                 //
                 if (varctx.variableInitializer() != null) {
                     ASNode initNode = new ASNode(ASNode.Type.INIT_VALUE);
-                    initNode.setValue("= " + getOriginalCodeText(varctx.variableInitializer()));
+                    initNode.setCode("= " + getOriginalCodeText(varctx.variableInitializer()));
+                    initNode.setLineOfCode(varctx.variableInitializer().getStart().getLine());
                     AST.addVertex(initNode);
                     AST.addEdge(varNode, initNode);
                 }
@@ -462,8 +503,8 @@ public class JavaASTBuilder {
         private void visitStatement(ParserRuleContext ctx) {
             Logger.printf(Logger.Level.DEBUG, "Visiting: (%d)  %s", ctx.getStart().getLine(), getOriginalCodeText(ctx));
             ASNode statementNode = new ASNode(ASNode.Type.STATEMENT);
+            statementNode.setCode(getOriginalCodeText(ctx));
             statementNode.setLineOfCode(ctx.getStart().getLine());
-            statementNode.setValue(getOriginalCodeText(ctx));
             AST.addVertex(statementNode);
             AST.addEdge(parentStack.peek(), statementNode);
         }
@@ -508,11 +549,13 @@ public class JavaASTBuilder {
         public String visitLabelStatement(JavaParser.LabelStatementContext ctx) {
             // labelStatement :  Identifier ':' statement
             ASNode labelNode = new ASNode(ASNode.Type.LABELED);
+            labelNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(labelNode);
             AST.addEdge(parentStack.peek(), labelNode);
             //
             ASNode labelName = new ASNode(ASNode.Type.NAME);
-            labelName.setValue(ctx.Identifier().getText());
+            labelName.setCode(ctx.Identifier().getText());
+            labelName.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(labelName);
             AST.addEdge(labelNode, labelName);
             //
@@ -526,15 +569,18 @@ public class JavaASTBuilder {
         public String visitIfStatement(JavaParser.IfStatementContext ctx) {
             // 'if' parExpression statement ('else' statement)?
             ASNode ifNode = new ASNode(ASNode.Type.IF);
+            ifNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(ifNode);
             AST.addEdge(parentStack.peek(), ifNode);
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
-            cond.setValue(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setLineOfCode(ctx.parExpression().getStart().getLine());
             AST.addVertex(cond);
             AST.addEdge(ifNode, cond);
             //
             ASNode thenNode = new ASNode(ASNode.Type.THEN);
+            thenNode.setLineOfCode(ctx.statement(0).getStart().getLine());
             AST.addVertex(thenNode);
             AST.addEdge(ifNode, thenNode);
             parentStack.push(thenNode);
@@ -543,6 +589,7 @@ public class JavaASTBuilder {
             //
             if (ctx.statement(1) != null) {
                 ASNode elseNode = new ASNode(ASNode.Type.ELSE);
+                elseNode.setLineOfCode(ctx.statement(1).getStart().getLine());
                 AST.addVertex(elseNode);
                 AST.addEdge(ifNode, elseNode);
                 parentStack.push(elseNode);
@@ -564,50 +611,59 @@ public class JavaASTBuilder {
             if (ctx.forControl().enhancedForControl() != null) {
                 // for-each loop
                 forNode = new ASNode(ASNode.Type.FOR_EACH);
+                forNode.setLineOfCode(ctx.getStart().getLine());
                 AST.addVertex(forNode);
                 AST.addEdge(parentStack.peek(), forNode);
                 //
                 ASNode varType = new ASNode(ASNode.Type.TYPE);
-                varType.setValue(ctx.forControl().enhancedForControl().typeType().getText());
+                varType.setCode(ctx.forControl().enhancedForControl().typeType().getText());
+                varType.setLineOfCode(ctx.forControl().enhancedForControl().typeType().getStart().getLine());
                 AST.addVertex(varType);
                 AST.addEdge(forNode, varType);
                 //
-                ASNode initId = new ASNode(ASNode.Type.NAME);
-                initId.setValue(ctx.forControl().enhancedForControl().variableDeclaratorId().getText());
-                AST.addVertex(initId);
-                AST.addEdge(forNode, initId);
+                ASNode varID = new ASNode(ASNode.Type.NAME);
+                varID.setCode(ctx.forControl().enhancedForControl().variableDeclaratorId().getText());
+                varID.setLineOfCode(ctx.forControl().enhancedForControl().variableDeclaratorId().getStart().getLine());
+                AST.addVertex(varID);
+                AST.addEdge(forNode, varID);
                 //
                 ASNode expr = new ASNode(ASNode.Type.IN);
-                expr.setValue(getOriginalCodeText(ctx.forControl().enhancedForControl().expression()));
+                expr.setCode(getOriginalCodeText(ctx.forControl().enhancedForControl().expression()));
+                expr.setLineOfCode(ctx.forControl().enhancedForControl().expression().getStart().getLine());
                 AST.addVertex(expr);
                 AST.addEdge(forNode, expr);
             } 
             // Classic for(init; expr; update)
             else {
                 forNode = new ASNode(ASNode.Type.FOR);
+                forNode.setLineOfCode(ctx.getStart().getLine());
                 AST.addVertex(forNode);
                 AST.addEdge(parentStack.peek(), forNode);
                 //
                 // for init
                 if (ctx.forControl().forInit() != null) {
                     ASNode forInit = new ASNode(ASNode.Type.FOR_INIT);
-                    forInit.setValue(getOriginalCodeText(ctx.forControl().forInit()));
+                    forInit.setCode(getOriginalCodeText(ctx.forControl().forInit()));
+                    forInit.setLineOfCode(ctx.forControl().forInit().getStart().getLine());
                     AST.addVertex(forInit);
                     AST.addEdge(forNode, forInit);
                 }
                 // for expr
                 ASNode forExpr = new ASNode(ASNode.Type.CONDITION);
-                forExpr.setValue(getOriginalCodeText(ctx.forControl().expression()));
+                forExpr.setCode(getOriginalCodeText(ctx.forControl().expression()));
+                forExpr.setLineOfCode(ctx.forControl().expression().getStart().getLine());
                 AST.addVertex(forExpr);
                 AST.addEdge(forNode, forExpr);
                 // for update
                 ASNode forUpdate = new ASNode(ASNode.Type.FOR_UPDATE);
-                forUpdate.setValue(getOriginalCodeText(ctx.forControl().forUpdate()));
+                forUpdate.setCode(getOriginalCodeText(ctx.forControl().forUpdate()));
+                forUpdate.setLineOfCode(ctx.forControl().forUpdate().getStart().getLine());
                 AST.addVertex(forUpdate);
                 AST.addEdge(forNode, forUpdate);
             }
             //
             ASNode block = new ASNode(ASNode.Type.BLOCK);
+            block.setLineOfCode(ctx.statement().getStart().getLine());
             AST.addVertex(block);
             AST.addEdge(forNode, block);
             parentStack.push(block);
@@ -620,15 +676,18 @@ public class JavaASTBuilder {
         public String visitWhileStatement(JavaParser.WhileStatementContext ctx) {
             // 'while' parExpression statement
             ASNode whileNode = new ASNode(ASNode.Type.WHILE);
+            whileNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(whileNode);
             AST.addEdge(parentStack.peek(), whileNode);
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
-            cond.setValue(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setLineOfCode(ctx.parExpression().expression().getStart().getLine());
             AST.addVertex(cond);
             AST.addEdge(whileNode, cond);
             //
             ASNode block = new ASNode(ASNode.Type.BLOCK);
+            block.setLineOfCode(ctx.statement().getStart().getLine());
             AST.addVertex(block);
             AST.addEdge(whileNode, block);
             parentStack.push(block);
@@ -641,15 +700,18 @@ public class JavaASTBuilder {
         public String visitDoWhileStatement(JavaParser.DoWhileStatementContext ctx) {
             // 'do' statement 'while' parExpression ';'
             ASNode doWhileNode = new ASNode(ASNode.Type.DO_WHILE);
+            doWhileNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(doWhileNode);
             AST.addEdge(parentStack.peek(), doWhileNode);
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
-            cond.setValue(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setLineOfCode(ctx.parExpression().expression().getStart().getLine());
             AST.addVertex(cond);
             AST.addEdge(doWhileNode, cond);
             //
             ASNode block = new ASNode(ASNode.Type.BLOCK);
+            block.setLineOfCode(ctx.statement().getStart().getLine());
             AST.addVertex(block);
             AST.addEdge(doWhileNode, block);
             parentStack.push(block);
@@ -662,10 +724,12 @@ public class JavaASTBuilder {
         public String visitTryStatement(JavaParser.TryStatementContext ctx) {
             // 'try' block (catchClause+ finallyBlock? | finallyBlock)
             ASNode tryNode = new ASNode(ASNode.Type.TRY);
+            tryNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(tryNode);
             AST.addEdge(parentStack.peek(), tryNode);
             //
             ASNode tryBlock = new ASNode(ASNode.Type.BLOCK);
+            tryBlock.setLineOfCode(ctx.block().getStart().getLine());
             AST.addVertex(tryBlock);
             AST.addEdge(tryNode, tryBlock);
             parentStack.push(tryBlock);
@@ -673,32 +737,37 @@ public class JavaASTBuilder {
             parentStack.pop();
             // catchClause :  'catch' '(' variableModifier* catchType Identifier ')' block
             if (ctx.catchClause() != null && ctx.catchClause().size() > 0) {
-                for (JavaParser.CatchClauseContext cx : ctx.catchClause()) {
+                for (JavaParser.CatchClauseContext catchx : ctx.catchClause()) {
                     ASNode catchNode = new ASNode(ASNode.Type.CATCH);
+                    catchNode.setLineOfCode(catchx.getStart().getLine());
                     AST.addVertex(catchNode);
                     AST.addEdge(tryNode, catchNode);
                     //
                     ASNode catchType = new ASNode(ASNode.Type.TYPE);
-                    catchType.setValue(cx.catchType().getText());
+                    catchType.setCode(catchx.catchType().getText());
+                    catchType.setLineOfCode(catchx.catchType().getStart().getLine());
                     AST.addVertex(catchType);
                     AST.addEdge(catchNode, catchType);
                     //
                     ASNode catchName = new ASNode(ASNode.Type.NAME);
-                    catchName.setValue(cx.Identifier().getText());
+                    catchName.setCode(catchx.Identifier().getText());
+                    catchName.setLineOfCode(catchx.getStart().getLine());
                     AST.addVertex(catchName);
                     AST.addEdge(catchNode, catchName);
                     //
                     ASNode catchBlock = new ASNode(ASNode.Type.BLOCK);
+                    catchBlock.setLineOfCode(catchx.block().getStart().getLine());
                     AST.addVertex(catchBlock);
                     AST.addEdge(catchNode, catchBlock);
                     parentStack.push(catchBlock);
-                    visit(cx.block());
+                    visit(catchx.block());
                     parentStack.pop();
                 }
             }
             // finallyBlock :  'finally' block
             if (ctx.finallyBlock() != null) {
                 ASNode finallyNode = new ASNode(ASNode.Type.FINALLY);
+                finallyNode.setLineOfCode(ctx.finallyBlock().getStart().getLine());
                 AST.addVertex(finallyNode);
                 AST.addEdge(tryNode, finallyNode);
                 parentStack.push(finallyNode);
@@ -716,33 +785,40 @@ public class JavaASTBuilder {
             // resource  :  variableModifier* classOrInterfaceType variableDeclaratorId '=' expression
             //
             ASNode tryNode = new ASNode(ASNode.Type.TRY);
+            tryNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(tryNode);
             AST.addEdge(parentStack.peek(), tryNode);
             //
             ASNode resNode = new ASNode(ASNode.Type.RESOURCES);
+            resNode.setLineOfCode(ctx.resourceSpecification().getStart().getLine());
             AST.addVertex(resNode);
             AST.addEdge(tryNode, resNode);
             for (JavaParser.ResourceContext resctx : ctx.resourceSpecification().resources().resource()) {
                 ASNode varNode = new ASNode(ASNode.Type.VARIABLE);
+                varNode.setLineOfCode(resctx.getStart().getLine());
                 AST.addVertex(varNode);
                 AST.addEdge(resNode, varNode);
                 //
                 ASNode resType = new ASNode(ASNode.Type.TYPE);
-                resType.setValue(resctx.classOrInterfaceType().getText());
+                resType.setCode(resctx.classOrInterfaceType().getText());
+                resType.setLineOfCode(resctx.classOrInterfaceType().getStart().getLine());
                 AST.addVertex(resType);
                 AST.addEdge(varNode, resType);
                 //
                 ASNode resName = new ASNode(ASNode.Type.NAME);
-                resName.setValue(resctx.variableDeclaratorId().getText());
+                resName.setCode(resctx.variableDeclaratorId().getText());
+                resName.setLineOfCode(resctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(resName);
                 AST.addEdge(varNode, resName);
                 //
                 ASNode resInit = new ASNode(ASNode.Type.INIT_VALUE);
-                resInit.setValue(getOriginalCodeText(resctx.expression()));
+                resInit.setCode(getOriginalCodeText(resctx.expression()));
+                resInit.setLineOfCode(resctx.expression().getStart().getLine());
                 AST.addVertex(resInit);
                 AST.addEdge(varNode, resInit);
             }
             ASNode tryBlock = new ASNode(ASNode.Type.BLOCK);
+            tryBlock.setLineOfCode(ctx.block().getStart().getLine());
             AST.addVertex(tryBlock);
             AST.addEdge(tryNode, tryBlock);
             parentStack.push(tryBlock);
@@ -751,32 +827,37 @@ public class JavaASTBuilder {
             //
             // catchClause :   'catch' '(' variableModifier* catchType Identifier ')' block
             if (ctx.catchClause().size() > 0 && ctx.catchClause() != null) {
-                for (JavaParser.CatchClauseContext cx : ctx.catchClause()) {
+                for (JavaParser.CatchClauseContext catchx : ctx.catchClause()) {
                     ASNode catchNode = new ASNode(ASNode.Type.CATCH);
+                    catchNode.setLineOfCode(catchx.getStart().getLine());
                     AST.addVertex(catchNode);
                     AST.addEdge(tryNode, catchNode);
                     //
                     ASNode catchType = new ASNode(ASNode.Type.TYPE);
-                    catchType.setValue(cx.catchType().getText());
+                    catchType.setCode(catchx.catchType().getText());
+                    catchType.setLineOfCode(catchx.catchType().getStart().getLine());
                     AST.addVertex(catchType);
                     AST.addEdge(catchNode, catchType);
                     //
                     ASNode catchName = new ASNode(ASNode.Type.NAME);
-                    catchName.setValue(cx.Identifier().getText());
+                    catchName.setCode(catchx.Identifier().getText());
+                    catchName.setLineOfCode(catchx.catchType().getStart().getLine());
                     AST.addVertex(catchName);
                     AST.addEdge(catchNode, catchName);
                     //
                     ASNode catchBlock = new ASNode(ASNode.Type.BLOCK);
+                    catchBlock.setLineOfCode(catchx.block().getStart().getLine());
                     AST.addVertex(catchBlock);
                     AST.addEdge(catchNode, catchBlock);
                     parentStack.push(catchBlock);
-                    visit(cx.block());
+                    visit(catchx.block());
                     parentStack.pop();
                 }
             }
             // finallyBlock :  'finally' block
             if (ctx.finallyBlock() != null) {
                 ASNode finallyNode = new ASNode(ASNode.Type.FINALLY);
+                finallyNode.setLineOfCode(ctx.finallyBlock().getStart().getLine());
                 AST.addVertex(finallyNode);
                 AST.addEdge(tryNode, finallyNode);
                 parentStack.push(finallyNode);
@@ -795,28 +876,32 @@ public class JavaASTBuilder {
             //             |   'default' ':'
             //
             ASNode switchNode = new ASNode(ASNode.Type.SWITCH);
+            switchNode.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(switchNode);
             AST.addEdge(parentStack.peek(), switchNode);
             //
             ASNode varName = new ASNode(ASNode.Type.NAME);
-            varName.setValue(getOriginalCodeText(ctx.parExpression().expression()));
+            varName.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            varName.setLineOfCode(ctx.parExpression().expression().getStart().getLine());
             AST.addVertex(varName);
             AST.addEdge(switchNode, varName);
             //
             if (ctx.switchBlockStatementGroup() != null) {
-                for (JavaParser.SwitchBlockStatementGroupContext grp : ctx.switchBlockStatementGroup()) {
+                for (JavaParser.SwitchBlockStatementGroupContext grpx : ctx.switchBlockStatementGroup()) {
                     ASNode blockNode = new ASNode(ASNode.Type.BLOCK);
+                    blockNode.setLineOfCode(grpx.blockStatement(0).getStart().getLine());
                     AST.addVertex(blockNode);
-                    for (JavaParser.SwitchLabelContext lblctx : grp.switchLabel())
+                    for (JavaParser.SwitchLabelContext lblctx : grpx.switchLabel())
                         visitSwitchLabel(lblctx, switchNode, blockNode);
                     parentStack.push(blockNode);
-                    for (JavaParser.BlockStatementContext blk : grp.blockStatement())
+                    for (JavaParser.BlockStatementContext blk : grpx.blockStatement())
                         visit(blk);
                     parentStack.pop();
                 }
             }
             if (ctx.switchLabel() != null && ctx.switchLabel().size() > 0) {
                 ASNode blockNode = new ASNode(ASNode.Type.BLOCK);
+                blockNode.setLineOfCode(ctx.switchLabel(0).getStart().getLine());
                 AST.addVertex(blockNode);
                 for (JavaParser.SwitchLabelContext lblctx : ctx.switchLabel())
                     visitSwitchLabel(lblctx, switchNode, blockNode);
@@ -828,12 +913,16 @@ public class JavaASTBuilder {
             ASNode caseNode;
             if (lblctx.constantExpression() != null) {
                 caseNode = new ASNode(ASNode.Type.CASE);
-                caseNode.setValue(lblctx.constantExpression().getText());
+                caseNode.setCode(lblctx.constantExpression().getText());
+                caseNode.setLineOfCode(lblctx.getStart().getLine());
             } else if (lblctx.enumConstantName() != null) {
                 caseNode = new ASNode(ASNode.Type.CASE);
-                caseNode.setValue(lblctx.enumConstantName().getText());
-            } else
+                caseNode.setCode(lblctx.enumConstantName().getText());
+                caseNode.setLineOfCode(lblctx.getStart().getLine());
+            } else {
                 caseNode = new ASNode(ASNode.Type.DEFAULT);
+                caseNode.setLineOfCode(lblctx.getStart().getLine());
+            }
             AST.addVertex(caseNode);
             AST.addEdge(switchNode, caseNode);
             AST.addEdge(caseNode, blockNode);
