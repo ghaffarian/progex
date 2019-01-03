@@ -94,12 +94,12 @@ public class ASNode {
         return (Integer) properties.get("line");
     }
 
-    public void setValue(String code) {
-        properties.put("value", code);
+    public void setCode(String code) {
+        properties.put("code", code);
     }
 
-    public String getValue() {
-        return (String) properties.get("value");
+    public String getCode() {
+        return (String) properties.get("code");
     }
 
     public void setProperty(String key, Object value) {
@@ -116,11 +116,11 @@ public class ASNode {
 
     @Override
     public String toString() {
-        String value = getValue();
-        if (value == null)
+        String code = getCode();
+        if (code == null || code.isEmpty())
             return getType().label;
         if (getType().label.isEmpty())
-            return value;
-        return getType().label + ": " + value;
+            return getLineOfCode() + ":  " + code;
+        return getType().label + ": " + code;
     }
 }
