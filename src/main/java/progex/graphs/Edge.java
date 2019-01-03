@@ -37,7 +37,7 @@ public class Edge<V,E> {
     
     @Override
     public String toString() {
-        if (label == null)
+        if (label == null || label.toString().trim().isEmpty())
             return String.format("%s --> %s", source.toString(), target.toString());
         else
             return String.format("%s --(%s)-> %s", source.toString(), label.toString(), target.toString());

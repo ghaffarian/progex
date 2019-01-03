@@ -13,6 +13,11 @@ public class CFEdge {
 	public CFEdge(Type type) {
 		this.type = type;
 	}
+    
+    @Override
+    public String toString() {
+        return type.toString();
+    }
 	
 
 	/**

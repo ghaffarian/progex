@@ -13,6 +13,11 @@ public class CDEdge {
 	public CDEdge(Type type) {
 		this.type = type;
 	}
+    
+    @Override
+    public String toString() {
+        return type.toString();
+    }
 
 	/**
 	 * Enumeration of different types for CD edges.
