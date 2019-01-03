@@ -4,6 +4,7 @@ package progex.graphs.cfg;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import progex.graphs.pdg.PDNode;
 
 /**
  * Class type of Control Flow (CF) nodes.
@@ -33,6 +34,10 @@ public class CFNode {
 	public String getCode() {
 		return (String) properties.get("code");
 	}
+    
+    public PDNode getPDNode() {
+        return (PDNode) getProperty("pdnode");
+    }
 	
 	public void setProperty(String key, Object value) {
 		properties.put(key.toLowerCase(), value);
