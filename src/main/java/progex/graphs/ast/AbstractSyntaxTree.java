@@ -83,8 +83,6 @@ public class AbstractSyntaxTree extends Graph<ASNode, ASEdge> {
                 String name = "n" + nodeCounter++;
                 nodeNames.put(node, name);
                 StringBuilder label = new StringBuilder("  [label=\"");
-                //if (node.getLineOfCode() > 0)
-                //    label.append(node.getLineOfCode()).append(":  ");
                 label.append(StringUtils.escape(node.toString())).append("\"];");
                 dot.println("  " + name + label.toString());
             }
