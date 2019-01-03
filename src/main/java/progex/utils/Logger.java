@@ -42,16 +42,16 @@ public class Logger {
         public final String LABEL;
     }
     
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("EEE yyyy/MMM/dd HH:mm:ss:SSS");
     
     private static Lock ioLock;
-    private static boolean enabled;
     private static Level activeLevel;
     private static boolean stdOutEcho;
     private static Level stdOutEchoLevel;
     private static PrintStream logStream;
     private static PrintWriter logWriter;
-    private static DateFormat dateFormat;
     private static boolean timeTagEnabled;
+    private static boolean enabled = false;
     
     
     /**
@@ -70,10 +70,8 @@ public class Logger {
         // Now, the real deal
         try {
             ioLock = new ReentrantLock();
-            dateFormat = new SimpleDateFormat("EEE yyyy/MMM/dd HH:mm:ss:SSS");
-            if (!path.toLowerCase().endsWith(".log")) {
+            if (!path.toLowerCase().endsWith(".log"))
                 path += ".log";
-            }
             File logFile = new File(path);
             if (!logFile.createNewFile()) {
                 logFile.delete();
@@ -90,10 +88,8 @@ public class Logger {
      * Redirects the standard-error (std-err) stream to the given file path.
      */
     public static void redirectStandardError(String path) throws IOException {
-        dateFormat = new SimpleDateFormat("EEE yyyy/MMM/dd HH:mm:ss:SSS");
-        if (!path.toLowerCase().endsWith(".err")) {
+        if (!path.toLowerCase().endsWith(".err"))
             path += ".err";
-        }
         File errorFile = new File(path);
         if (!errorFile.createNewFile()) {
             errorFile.delete();
@@ -178,7 +174,7 @@ public class Logger {
      * The string is formatted as EEE yyyy/MMM/dd HH:mm:ss:SSS.
      */
     public static String date() {
-        return dateFormat.format(Calendar.getInstance().getTime());
+        return DATE_FORMAT.format(Calendar.getInstance().getTime());
     }
 
     /**
