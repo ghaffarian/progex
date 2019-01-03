@@ -102,9 +102,7 @@ public class JavaDDGBuilder {
 		Logger.info("Done.");
 		
 		// Analyze method DEF information for imported libraries
-		Logger.setEnabled(false);
 		analyzeImportsDEF(filesClasses);
-		Logger.setEnabled(true);
 		
 		// Iteratively, extract USE-DEF info for all program statements ...
 		DataDependenceGraph[] ddgs = new DataDependenceGraph[files.length];
