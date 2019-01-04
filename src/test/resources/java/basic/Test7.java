@@ -1,15 +1,15 @@
 
-public class Test11 {
+public class Test7 {
 
 	private String str;
 	private Integer integer;
 
-	public Test11() {
+	public Test7() {
 		str = "";
 		integer = 0;
 	}
 	
-	public Test11(String str, int sub) {
+	public Test7(String str, int sub) {
 		this.str = str.substring(sub);
 		integer = 0;
 	}
@@ -49,14 +49,14 @@ public class Test11 {
 	
 	public static void main(String[] args) {
 		int idx = 4;
-		Test11 t = new Test11();
+		Test7 t = new Test7();
 		t.method1();
 		String str = "some-string";
 		t.setSTR(t.addSTR(str).concat(str));
 		System.out.println(t.getSTR());
 		System.out.println(t.getSTR().charAt(idx += 2));
-		t = new Test11(str.concat("-plus-more"), idx);
-		new Test11("This is a string", 10).getSTR();
+		t = new Test7(str.concat("-plus-more"), idx);
+		new Test7("This is a string", 10).getSTR();
 		simple();
 		t.sideEffect();
 		System.out.println("t.integer = " + t.getInteger());

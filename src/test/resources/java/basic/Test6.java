@@ -1,5 +1,5 @@
 
-public class Test10 {
+public class Test6 {
 
 	public void test() {
 		int x = 0;
@@ -40,7 +40,7 @@ public class Test10 {
 			System.out.println(x);
 		}
 		
-		Test10 tst = new Test10();
+		Test6 tst = new Test6();
 		tst.test();
 	}
 }

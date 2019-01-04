@@ -1,5 +1,5 @@
 
-public class Test19 {
+public class Test9 {
 
 	public static String test() {
 		StringBuilder str = new StringBuilder();

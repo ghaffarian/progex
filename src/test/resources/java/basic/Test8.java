@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 
-public class Test18 {
+public class Test8 {
 
 	public static void run(int x) {
 		//
@@ -56,7 +56,7 @@ public class Test18 {
 
 	public static void main(String[] args) {
 		if (args.length > 0)
-			Test18.run(Integer.parseInt(args[0]));
+			Test8.run(Integer.parseInt(args[0]));
 		else
 			System.out.println("Nothing to process!");
 	}

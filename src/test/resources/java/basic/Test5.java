@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class Test05 {
+public class Test5 {
 
 	public static void test1() {
 		File file = new File("file.log");
@@ -22,7 +22,6 @@ public class Test05 {
 		} finally {
 			System.out.println("finally");
 		}
-		System.out.println("end");
 	}
 
 	
@@ -40,7 +39,6 @@ public class Test05 {
 		} finally {
 			System.out.println("finally");
 		}
-		System.out.println("end");
 	}
 	
 	
@@ -70,6 +68,7 @@ public class Test05 {
 		} catch (Exception ex) {
 			System.err.println(ex);
 		}
+		System.out.println("Finish");
 	}
 	
 

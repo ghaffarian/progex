@@ -1,5 +1,5 @@
 
-public class Test06 {
+public class Test3 {
 
 	public static void test1(int i) {
 		switch (i) {

@@ -1,9 +1,9 @@
 
-public class Test07 {
+public class Test4 {
 
 	private String str;
 
-	public Test07() {
+	public Test4() {
 		str = "init";
 	}
 	
@@ -110,7 +110,7 @@ public class Test07 {
 	}
 	
 	public static void main(String[] args) {
-		Test07 tst = new Test07();
+		Test4 tst = new Test4();
 		tst.setString(tst.getString());
 		System.out.println(tst.getString());
 		tst.test1(9);
