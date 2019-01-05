@@ -21,7 +21,7 @@ public class DepthFirstTraversal<V,E> implements GraphTraversal<V, E> {
     private V nextVertex;
     private Edge<V,E> nextEdge;
     private final Deque<V> visited;
-    private final Deque<Edge<V,E>> visiting;
+    private final Deque<Edge<V,E>> visiting, reverStack;
     
     /**
      * Construct a new depth-first traversal 
@@ -34,8 +34,9 @@ public class DepthFirstTraversal<V,E> implements GraphTraversal<V, E> {
         START_VERTEX = start;
         visited = new ArrayDeque<>(GRAPH.allVertices.size());
         visiting = new ArrayDeque<>(GRAPH.allEdges.size());
+        reverStack = new ArrayDeque<>();
         Edge<V,E> startEdge = new Edge<>(null, null, START_VERTEX);
-        visiting.push(startEdge); // dummy start edge
+        visiting.add(startEdge); // dummy start edge
     }
 
     @Override
@@ -70,9 +71,14 @@ public class DepthFirstTraversal<V,E> implements GraphTraversal<V, E> {
             // directed graph
             nextVertex = nextEdge.target;
             if (visited.add(nextVertex)) {
+                // For DFS, we need to push all children in reverse order;
+                // so first push all children to the reverse-stack
                 for (Edge<V,E> out: GRAPH.outEdges.get(nextVertex))
                     if (!visited.contains(out.target))
-                        visiting.push(out);
+                        reverStack.push(out);
+                // now pop them and push them into visiting
+                while (!reverStack.isEmpty())
+                    visiting.push(reverStack.pop());
             }
         } else {
             // undirected graph
@@ -84,10 +90,15 @@ public class DepthFirstTraversal<V,E> implements GraphTraversal<V, E> {
             if (visited.add(nextVertex)) {
                 for (Edge<V,E> out: GRAPH.outEdges.get(nextVertex))
                     if (!visited.contains(out.target))
-                        visiting.push(out);
+                        reverStack.push(out);
+                while (!reverStack.isEmpty())
+                    visiting.push(reverStack.pop());
+                //
                 for (Edge<V,E> in: GRAPH.inEdges.get(nextVertex))
                     if (!visited.contains(in.source))
-                        visiting.push(in);
+                        reverStack.push(in);
+                while (!reverStack.isEmpty())
+                    visiting.push(reverStack.pop());
             }
         }
     }
