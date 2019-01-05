@@ -142,7 +142,7 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 	}
 	
 	/**
-	 * Export this Control Dependence Subgraph (CDG) of PDG to DOT format.
+	 * Export the Data Dependence Subgraph (DDG) of PDG to DOT file format.
 	 * The DOT file will be saved in current working directory.
 	 * The DOT format is mainly aimed for visualization purposes.
 	 */
