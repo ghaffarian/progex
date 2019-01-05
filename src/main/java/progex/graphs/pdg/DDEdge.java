@@ -18,7 +18,8 @@ public class DDEdge {
 	
 	@Override
 	public String toString() {
-		return type.toString() + '(' + var + ')';
+        return var;
+		//return type.toString() + '(' + var + ')';
 	}
 
 	/**
