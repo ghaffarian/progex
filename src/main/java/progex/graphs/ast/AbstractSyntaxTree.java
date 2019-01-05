@@ -56,6 +56,14 @@ public class AbstractSyntaxTree extends Graph<ASNode, ASEdge> {
 				break;
 		}
 	}
+    
+	/**
+	 * Export this Abstract Syntax Tree (AST) to JSON format.
+	 * The JSON file will be saved in current working directory.
+	 */
+    public void exportJSON() throws FileNotFoundException {
+        exportJSON(System.getProperty("user.dir"));
+    }
 	
 	/**
 	 * Export this Abstract Syntax Tree (AST) to JSON format.
@@ -67,10 +75,23 @@ public class AbstractSyntaxTree extends Graph<ASNode, ASEdge> {
     
     /**
      * Export this Abstract Syntax Tree (AST) to DOT format. 
+     * The DOT file will be saved in current working directory. 
+     * The DOT format is mainly aimed for visualization purposes.
+     */
+    public void exportDOT() throws FileNotFoundException {
+        exportDOT(System.getProperty("user.dir"));
+    }
+    
+    /**
+     * Export this Abstract Syntax Tree (AST) to DOT format. 
      * The DOT file will be saved inside the given directory. 
      * The DOT format is mainly aimed for visualization purposes.
      */
     public void exportDOT(String outDir) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
         String filename = new File(FILE_PATH).getName();
         filename = filename.substring(0, filename.lastIndexOf('.'));
         String filepath = outDir + filename + "-AST.dot";

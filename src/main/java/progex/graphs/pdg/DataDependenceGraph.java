@@ -1,6 +1,7 @@
 /*** In The Name of Allah ***/
 package progex.graphs.pdg;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -64,9 +65,21 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 	
 	/**
 	 * Export the Data Dependence Subgraph (DDG) of PDG to JSON file format.
+	 * The JSON file will be saved in current working directory. 
+	 */
+	public void exportJSON() throws FileNotFoundException {
+        exportJSON(System.getProperty("user.dir"));
+    }    
+	
+	/**
+	 * Export the Data Dependence Subgraph (DDG) of PDG to JSON file format.
 	 * The JSON file will be saved inside the given directory.
 	 */
 	public void exportJSON(String outDir) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-DATA.json";
 		try (PrintWriter json = new PrintWriter(filepath, "UTF-8")) {
@@ -129,11 +142,24 @@ public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
 	}
 	
 	/**
+	 * Export this Control Dependence Subgraph (CDG) of PDG to DOT format.
+	 * The DOT file will be saved in current working directory.
+	 * The DOT format is mainly aimed for visualization purposes.
+	 */
+	public void exportDOT() throws FileNotFoundException {
+        exportDOT(System.getProperty("user.dir"), false);
+    }
+    
+	/**
 	 * Export the Data Dependence Subgraph (DDG) of PDG to DOT file format.
 	 * The DOT file will be saved inside the given directory.
 	 * The DOT format is mainly aimed for visualization purposes.
 	 */
 	public void exportDOT(String outDir, boolean ctrlEdgeLabels) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-DATA.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {

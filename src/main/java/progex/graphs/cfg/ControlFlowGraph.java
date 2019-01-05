@@ -1,6 +1,7 @@
 /*** In The Name of Allah ***/
 package progex.graphs.cfg;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -60,12 +61,24 @@ public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
 				break;
 		}
 	}
+    
+	/**
+	 * Export this Control Flow Graph (CFG) to JSON format.
+	 * The JSON file will be saved in current working directory. 
+	 */
+	public void exportJSON() throws FileNotFoundException {
+        exportJSON(System.getProperty("user.dir"));
+    }    
 	
 	/**
 	 * Export this Control Flow Graph (CFG) to JSON format.
 	 * The JSON file will be saved inside the given directory path.
 	 */
 	public void exportJSON(String outDir) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.json";
 		try (PrintWriter json = new PrintWriter(filepath, "UTF-8")) {
@@ -105,10 +118,23 @@ public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
 	
 	/**
 	 * Export this Control Flow Graph (CFG) to DOT format.
+	 * The DOT file will be saved in current working directory.
+	 * The DOT format is mainly aimed for visualization purposes.
+	 */
+	public void exportDOT() throws FileNotFoundException {
+        exportDOT(System.getProperty("user.dir"));
+    }
+
+    /**
+	 * Export this Control Flow Graph (CFG) to DOT format.
 	 * The DOT file will be saved inside the given directory.
 	 * The DOT format is mainly aimed for visualization purposes.
 	 */
 	public void exportDOT(String outDir) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
 		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
