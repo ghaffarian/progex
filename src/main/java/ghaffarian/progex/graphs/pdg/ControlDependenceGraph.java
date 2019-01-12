@@ -16,12 +16,12 @@ import ghaffarian.nanologger.Logger;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class ControlDependenceGraph extends Graph<PDNode, CDEdge> {
+public class ControlDependenceGraph extends Digraph<PDNode, CDEdge> {
 	
 	public final String FILE_NAME;
 	
 	public ControlDependenceGraph(String javaFileName) {
-		super(true);
+		super();
 		FILE_NAME = javaFileName;
 	}
 	

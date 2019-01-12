@@ -21,13 +21,13 @@ import ghaffarian.nanologger.Logger;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class DataDependenceGraph extends Graph<PDNode, DDEdge> {
+public class DataDependenceGraph extends Digraph<PDNode, DDEdge> {
 	
 	public final String FILE_NAME;
 	private ControlFlowGraph cfg;
 	
 	public DataDependenceGraph(String javaFileName) {
-		super(true);
+		super();
 		FILE_NAME = javaFileName;
 		cfg = null;
 	}

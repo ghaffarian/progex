@@ -18,14 +18,14 @@ import ghaffarian.nanologger.Logger;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class ControlFlowGraph extends Graph<CFNode, CFEdge> {
+public class ControlFlowGraph extends Digraph<CFNode, CFEdge> {
 	
 	private String pkgName;
 	public final String FILE_NAME;
 	private List<CFNode> methodEntries;
 
 	public ControlFlowGraph(String name) {
-		super(true);
+		super();
 		pkgName = "";
 		this.FILE_NAME = name;
 		methodEntries = new ArrayList<>();

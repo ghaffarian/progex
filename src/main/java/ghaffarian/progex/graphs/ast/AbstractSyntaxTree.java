@@ -16,7 +16,7 @@ import ghaffarian.nanologger.Logger;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class AbstractSyntaxTree extends Graph<ASNode, ASEdge> {
+public class AbstractSyntaxTree extends Digraph<ASNode, ASEdge> {
     
     public final String FILE_PATH;
     
@@ -27,7 +27,7 @@ public class AbstractSyntaxTree extends Graph<ASNode, ASEdge> {
      * for the given source-code file-path.
      */
 	public AbstractSyntaxTree(String path) {
-		super(true);
+		super();
         FILE_PATH = path;
         ROOT = new ASNode(ASNode.Type.ROOT);
         addVertex(ROOT);
