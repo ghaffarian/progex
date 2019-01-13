@@ -639,7 +639,6 @@ public class JavaASTBuilder {
                 forNode.setLineOfCode(ctx.getStart().getLine());
                 AST.addVertex(forNode);
                 AST.addEdge(parentStack.peek(), forNode);
-                //
                 // for init
                 if (ctx.forControl().forInit() != null) {
                     ASNode forInit = new ASNode(ASNode.Type.FOR_INIT);
@@ -649,17 +648,21 @@ public class JavaASTBuilder {
                     AST.addEdge(forNode, forInit);
                 }
                 // for expr
-                ASNode forExpr = new ASNode(ASNode.Type.CONDITION);
-                forExpr.setCode(getOriginalCodeText(ctx.forControl().expression()));
-                forExpr.setLineOfCode(ctx.forControl().expression().getStart().getLine());
-                AST.addVertex(forExpr);
-                AST.addEdge(forNode, forExpr);
+                if (ctx.forControl().expression() != null) {
+                    ASNode forExpr = new ASNode(ASNode.Type.CONDITION);
+                    forExpr.setCode(getOriginalCodeText(ctx.forControl().expression()));
+                    forExpr.setLineOfCode(ctx.forControl().expression().getStart().getLine());
+                    AST.addVertex(forExpr);
+                    AST.addEdge(forNode, forExpr);
+                }
                 // for update
-                ASNode forUpdate = new ASNode(ASNode.Type.FOR_UPDATE);
-                forUpdate.setCode(getOriginalCodeText(ctx.forControl().forUpdate()));
-                forUpdate.setLineOfCode(ctx.forControl().forUpdate().getStart().getLine());
-                AST.addVertex(forUpdate);
-                AST.addEdge(forNode, forUpdate);
+                if (ctx.forControl().forUpdate() != null) {
+                    ASNode forUpdate = new ASNode(ASNode.Type.FOR_UPDATE);
+                    forUpdate.setCode(getOriginalCodeText(ctx.forControl().forUpdate()));
+                    forUpdate.setLineOfCode(ctx.forControl().forUpdate().getStart().getLine());
+                    AST.addVertex(forUpdate);
+                    AST.addEdge(forNode, forUpdate);
+                }
             }
             //
             ASNode block = new ASNode(ASNode.Type.BLOCK);
