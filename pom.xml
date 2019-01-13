@@ -79,7 +79,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>libs/</classpathPrefix>
-              <mainClass>progex.Main</mainClass>
+              <mainClass>ghaffarian.progex.Main</mainClass>
             </manifest>
           </archive>
         </configuration>
