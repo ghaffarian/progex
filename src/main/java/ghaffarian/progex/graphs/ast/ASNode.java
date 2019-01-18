@@ -3,6 +3,7 @@ package ghaffarian.progex.graphs.ast;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -78,31 +79,31 @@ public class ASNode {
         setType(type);
     }
 
-    public void setType(Type type) {
+    public final void setType(Type type) {
         properties.put("type", type);
     }
 
-    public Type getType() {
+    public final Type getType() {
         return (Type) properties.get("type");
     }
 
-    public void setLineOfCode(int line) {
+    public final void setLineOfCode(int line) {
         properties.put("line", line);
     }
 
-    public int getLineOfCode() {
+    public final int getLineOfCode() {
         return (Integer) properties.get("line");
     }
 
-    public void setCode(String code) {
+    public final void setCode(String code) {
         properties.put("code", code);
     }
 
-    public String getCode() {
+    public final String getCode() {
         return (String) properties.get("code");
     }
 
-    public void setProperty(String key, Object value) {
+    public final void setProperty(String key, Object value) {
         properties.put(key.toLowerCase(), value);
     }
 
@@ -122,5 +123,26 @@ public class ASNode {
         if (getType().label.isEmpty())
             return getLineOfCode() + ":  " + code;
         return getType().label + ": " + code;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.getType());
+        hash = 29 * hash + Objects.hashCode(this.getCode());
+        return hash;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final ASNode other = (ASNode) obj;
+        return this.getType() == other.getType() && 
+               (this.getCode() == null ? other.getCode() == null : this.getCode().equals(other.getCode()));
     }
 }

@@ -16,7 +16,7 @@ import ghaffarian.nanologger.Logger;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class AbstractSyntaxTree extends Digraph<ASNode, ASEdge> {
+public class AbstractSyntaxTree extends IdentityDigraph<ASNode, ASEdge> {
     
     public final String FILE_PATH;
     
