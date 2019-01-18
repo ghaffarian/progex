@@ -14,6 +14,14 @@ import java.util.Arrays;
 public class FileUtils {
 	
 	/**
+	 * Returns a list of file-paths from the given directory-path
+	 * where the files exist and the filenames match a given suffix.
+	 */
+	public static String[] listFilesWithSuffix(String dirPath, String suffix) {
+		return listFilesWithSuffix(new File[] {new File(dirPath)}, suffix);
+	}
+	
+	/**
 	 * Returns a list of file-paths based on the given input file-paths 
 	 * where the files exist and the filenames match a given suffix.
 	 */
