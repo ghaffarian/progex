@@ -93,6 +93,7 @@ public class JavaASTBuilder {
             if (rootCntx.importDeclaration() != null && rootCntx.importDeclaration().size() > 0) {
                 ASNode imports = new ASNode(ASNode.Type.IMPORTS);
                 imports.setLineOfCode(rootCntx.importDeclaration(0).getStart().getLine());
+                Logger.debug("Adding imports");
                 AST.addVertex(imports);
                 AST.addEdge(AST.ROOT, imports);
                 parentStack.push(imports);
@@ -114,6 +115,7 @@ public class JavaASTBuilder {
             ASNode node = new ASNode(ASNode.Type.PACKAGE);
             node.setCode(ctx.qualifiedName().getText());
             node.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding package");
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
             return null;
@@ -131,6 +133,7 @@ public class JavaASTBuilder {
             ASNode node = new ASNode(ASNode.Type.IMPORT);
             node.setCode(qualifiedName);
             node.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding import " + qualifiedName);
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
             return null;
@@ -159,12 +162,14 @@ public class JavaASTBuilder {
             //      ('extends' typeType)? ('implements' typeList)? classBody
             ASNode classNode = new ASNode(ASNode.Type.CLASS);
             classNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding class node");
             AST.addVertex(classNode);
             AST.addEdge(parentStack.peek(), classNode);
             //
             ASNode modifierNode = new ASNode(ASNode.Type.MODIFIER);
             modifierNode.setCode(typeModifier);
             modifierNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding class modifier");
             AST.addVertex(modifierNode);
             AST.addEdge(classNode, modifierNode);
             //
@@ -174,6 +179,7 @@ public class JavaASTBuilder {
                 className += ctx.typeParameters().getText();
             nameNode.setCode(className);
             nameNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding class name: " + className);
             AST.addVertex(nameNode);
             AST.addEdge(classNode, nameNode);
             //
@@ -181,6 +187,7 @@ public class JavaASTBuilder {
                 ASNode extendsNode = new ASNode(ASNode.Type.EXTENDS);
                 extendsNode.setCode(ctx.typeType().getText());
                 extendsNode.setLineOfCode(ctx.typeType().getStart().getLine());
+                Logger.debug("Adding extends " + ctx.typeType().getText());
                 AST.addVertex(extendsNode);
                 AST.addEdge(classNode, extendsNode);
             }
@@ -188,12 +195,14 @@ public class JavaASTBuilder {
             if (ctx.typeList() != null) {
                 ASNode implementsNode = new ASNode(ASNode.Type.IMPLEMENTS);
                 implementsNode.setLineOfCode(ctx.typeList().getStart().getLine());
+                Logger.debug("Adding implements node ");
                 AST.addVertex(implementsNode);
                 AST.addEdge(classNode, implementsNode);
                 for (JavaParser.TypeTypeContext type : ctx.typeList().typeType()) {
                     ASNode node = new ASNode(ASNode.Type.INTERFACE);
                     node.setCode(type.getText());
                     node.setLineOfCode(type.getStart().getLine());
+                    Logger.debug("Adding interface " + type.getText());
                     AST.addVertex(node);
                     AST.addEdge(implementsNode, node);
                 }
@@ -225,6 +234,7 @@ public class JavaASTBuilder {
             if (ctx.block() != null) {
                 ASNode staticBlock = new ASNode(ASNode.Type.STATIC_BLOCK);
                 staticBlock.setLineOfCode(ctx.block().getStart().getLine());
+                Logger.debug("Adding static block");
                 AST.addVertex(staticBlock);
                 AST.addEdge(parentStack.peek(), staticBlock);
                 parentStack.push(staticBlock);
@@ -238,17 +248,19 @@ public class JavaASTBuilder {
                 memberModifier = memberModifier.trim();
                 // Field member
                 if (ctx.memberDeclaration().fieldDeclaration() != null) {
-                    ASNode fieldsNode = new ASNode(ASNode.Type.FIELD);
-                    fieldsNode.setLineOfCode(ctx.memberDeclaration().fieldDeclaration().getStart().getLine());
-                    AST.addVertex(fieldsNode);
-                    AST.addEdge(parentStack.peek(), fieldsNode);
-                    parentStack.push(fieldsNode);
+                    ASNode fieldNode = new ASNode(ASNode.Type.FIELD);
+                    fieldNode.setLineOfCode(ctx.memberDeclaration().fieldDeclaration().getStart().getLine());
+                    Logger.debug("Adding field node");
+                    AST.addVertex(fieldNode);
+                    AST.addEdge(parentStack.peek(), fieldNode);
+                    parentStack.push(fieldNode);
                     visit(ctx.memberDeclaration().fieldDeclaration());
                     parentStack.pop();
                 } else if (ctx.memberDeclaration().constructorDeclaration() != null) {
                     // Constructor member
                     ASNode constructorNode = new ASNode(ASNode.Type.CONSTRUCTOR);
                     constructorNode.setLineOfCode(ctx.memberDeclaration().constructorDeclaration().getStart().getLine());
+                    Logger.debug("Adding constructor node");
                     AST.addVertex(constructorNode);
                     AST.addEdge(parentStack.peek(), constructorNode);
                     parentStack.push(constructorNode);
@@ -258,6 +270,7 @@ public class JavaASTBuilder {
                     // Method member
                     ASNode methodNode = new ASNode(ASNode.Type.METHOD);
                     methodNode.setLineOfCode(ctx.memberDeclaration().methodDeclaration().getStart().getLine());
+                    Logger.debug("Adding method node");
                     AST.addVertex(methodNode);
                     AST.addEdge(parentStack.peek(), methodNode);
                     parentStack.push(methodNode);
@@ -392,24 +405,28 @@ public class JavaASTBuilder {
             ASNode modifierNode = new ASNode(ASNode.Type.MODIFIER);
             modifierNode.setCode(memberModifier);
             modifierNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding method modifier");
             AST.addVertex(modifierNode);
             AST.addEdge(parentStack.peek(), modifierNode);
             //
             ASNode retNode = new ASNode(ASNode.Type.RETURN);
             retNode.setCode(ctx.getChild(0).getText());
             retNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding method type");
             AST.addVertex(retNode);
             AST.addEdge(parentStack.peek(), retNode);
             //
             ASNode nameNode = new ASNode(ASNode.Type.NAME);
             nameNode.setCode(ctx.Identifier().getText());
             nameNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding method name");
             AST.addVertex(nameNode);
             AST.addEdge(parentStack.peek(), nameNode);
             //
             if (ctx.formalParameters().formalParameterList() != null) {
                 ASNode paramsNode = new ASNode(ASNode.Type.PARAMS);
                 paramsNode.setLineOfCode(ctx.formalParameters().getStart().getLine());
+                Logger.debug("Adding method params node");
                 AST.addVertex(paramsNode);
                 AST.addEdge(parentStack.peek(), paramsNode);
                 parentStack.push(paramsNode);
@@ -456,6 +473,7 @@ public class JavaASTBuilder {
             if (ctx.methodBody() != null) {
                 ASNode methodBody = new ASNode(ASNode.Type.BLOCK);
                 methodBody.setLineOfCode(ctx.methodBody().getStart().getLine());
+                Logger.debug("Adding method block");
                 AST.addVertex(methodBody);
                 AST.addEdge(parentStack.peek(), methodBody);
                 parentStack.push(methodBody);
@@ -505,6 +523,7 @@ public class JavaASTBuilder {
             ASNode statementNode = new ASNode(ASNode.Type.STATEMENT);
             statementNode.setCode(getOriginalCodeText(ctx));
             statementNode.setLineOfCode(ctx.getStart().getLine());
+            Logger.debug("Adding statement " + ctx.getStart().getLine());
             AST.addVertex(statementNode);
             AST.addEdge(parentStack.peek(), statementNode);
         }
