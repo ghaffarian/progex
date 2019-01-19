@@ -3,7 +3,6 @@ package ghaffarian.progex.graphs.ast;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -125,6 +124,7 @@ public class ASNode {
         return getType().label + ": " + code;
     }
 
+    /*
     @Override
     public int hashCode() {
         int hash = 7;
@@ -145,4 +145,5 @@ public class ASNode {
         return this.getType() == other.getType() && 
                (this.getCode() == null ? other.getCode() == null : this.getCode().equals(other.getCode()));
     }
+    */
 }

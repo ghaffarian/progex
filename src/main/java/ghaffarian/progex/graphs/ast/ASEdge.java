@@ -8,6 +8,7 @@ package ghaffarian.progex.graphs.ast;
  */
 public class ASEdge {
     
+    /*
     @Override
     public int hashCode() {
         int hash = 17;
@@ -22,4 +23,5 @@ public class ASEdge {
             return false;
         return obj instanceof ASEdge;
     }
+    */
 }
