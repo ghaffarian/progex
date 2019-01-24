@@ -79,7 +79,7 @@ public class PDNode {
 		return properties.get(key.toLowerCase());
 	}
 	
-	public Set<String> getAllKeys() {
+	public Set<String> getAllProperties() {
 		return properties.keySet();
 	}
 	

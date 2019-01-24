@@ -47,7 +47,7 @@ public class CFNode {
 		return properties.get(key.toLowerCase());
 	}
 	
-	public Set<String> getAllKeys() {
+	public Set<String> getAllProperties() {
 		return properties.keySet();
 	}
 	
