@@ -110,7 +110,7 @@ public class ASNode {
         return properties.get(key.toLowerCase());
     }
 
-    public Set<String> getAllKeys() {
+    public Set<String> getAllProperties() {
         return properties.keySet();
     }
 
@@ -123,27 +123,4 @@ public class ASNode {
             return getLineOfCode() + ":  " + code;
         return getType().label + ": " + code;
     }
-
-    /*
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.getType());
-        hash = 29 * hash + Objects.hashCode(this.getCode());
-        return hash;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final ASNode other = (ASNode) obj;
-        return this.getType() == other.getType() && 
-               (this.getCode() == null ? other.getCode() == null : this.getCode().equals(other.getCode()));
-    }
-    */
 }
