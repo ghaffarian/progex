@@ -55,7 +55,8 @@ public class ASNode {
         SWITCH      ("SWITCH"),
         CASE        ("CASE"),
         DEFAULT     ("DEFAULT"),
-        LABELED     ("LABELED");
+        LABELED     ("LABELED"),
+        SYNC        ("SYNCHRONIZED");
 
         public final String label;
 
@@ -101,7 +102,16 @@ public class ASNode {
     public final String getCode() {
         return (String) properties.get("code");
     }
+    
+    public final void setNormalizedCode(String normal) {
+        if (normal != null)
+            properties.put("normalized", normal);
+    }
 
+    public final String getNormalizedCode() {
+        return (String) properties.get("normalized");
+    }
+    
     public final void setProperty(String key, Object value) {
         properties.put(key.toLowerCase(), value);
     }
