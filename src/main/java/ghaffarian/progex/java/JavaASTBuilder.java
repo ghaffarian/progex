@@ -19,6 +19,7 @@ import ghaffarian.progex.java.parser.JavaBaseVisitor;
 import ghaffarian.progex.java.parser.JavaLexer;
 import ghaffarian.progex.java.parser.JavaParser;
 import ghaffarian.nanologger.Logger;
+import java.util.LinkedHashMap;
 
 /**
  * Abstract Syntax Tree (AST) builder for Java programs.
@@ -69,11 +70,13 @@ public class JavaASTBuilder {
 	 */
 	private static class AbstractSyntaxVisitor extends JavaBaseVisitor<String> {
         
-		private String propKey;
+        private String propKey;
         private String typeModifier;
         private String memberModifier;
         private Deque<ASNode> parentStack;
         private final AbstractSyntaxTree AST;
+        private Map<String, String> vars, fields, methods;
+		private int varsCounter, fieldsCounter, methodsCounter;
 		private Map<ParserRuleContext, Object> contexutalProperties;
 		
 		public AbstractSyntaxVisitor(String filePath, String propKey, Map<ParserRuleContext, Object> ctxProps) {
@@ -81,6 +84,10 @@ public class JavaASTBuilder {
             AST = new AbstractSyntaxTree(filePath);
 			this.propKey = propKey;
 			contexutalProperties = ctxProps;
+            vars = new LinkedHashMap<>();
+            fields = new LinkedHashMap<>();
+            methods = new LinkedHashMap<>();
+            varsCounter = 0; fieldsCounter = 0; methodsCounter = 0;
 		}
         
         public AbstractSyntaxTree build(ParseTree tree) {
@@ -106,9 +113,16 @@ public class JavaASTBuilder {
                 for (JavaParser.TypeDeclarationContext typeDecCtx : rootCntx.typeDeclaration())
                     visit(typeDecCtx);
             parentStack.pop();
+            vars.clear();
+            fields.clear();
+            methods.clear();
             return AST;
         }
-		
+
+        //=====================================================================//
+        //                           DECLARATIONS                              //
+        //=====================================================================//        
+        
         @Override
         public String visitPackageDeclaration(JavaParser.PackageDeclarationContext ctx) {
             // packageDeclaration :  annotation* 'package' qualifiedName ';'
@@ -348,6 +362,7 @@ public class JavaASTBuilder {
             parentStack.push(bodyBlock);
             visitChildren(ctx.constructorBody().block());
             parentStack.pop();
+            resetLocalVars();
             return null;
         }
 
@@ -370,8 +385,13 @@ public class JavaASTBuilder {
                 AST.addVertex(type);
                 AST.addEdge(parentStack.peek(), type);
                 //
+                ++fieldsCounter;
                 ASNode name = new ASNode(ASNode.Type.NAME);
-                name.setCode(varctx.variableDeclaratorId().getText());
+                String fieldName = varctx.variableDeclaratorId().getText();
+                String normalized = "$FIELD" + fieldsCounter;
+                fields.put(fieldName, normalized);
+                name.setCode(fieldName);
+                name.setNormalizedCode(normalized);
                 name.setLineOfCode(varctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(name);
                 AST.addEdge(parentStack.peek(), name);
@@ -416,8 +436,13 @@ public class JavaASTBuilder {
             AST.addVertex(retNode);
             AST.addEdge(parentStack.peek(), retNode);
             //
+            ++methodsCounter;
             ASNode nameNode = new ASNode(ASNode.Type.NAME);
-            nameNode.setCode(ctx.Identifier().getText());
+            String methodName = ctx.Identifier().getText();
+            String normalized = "$METHOD" + methodsCounter;
+            methods.put(methodName, normalized);
+            nameNode.setCode(methodName);
+            nameNode.setNormalizedCode(normalized);
             nameNode.setLineOfCode(ctx.getStart().getLine());
             Logger.debug("Adding method name");
             AST.addVertex(nameNode);
@@ -479,6 +504,7 @@ public class JavaASTBuilder {
                 parentStack.push(methodBody);
                 visitChildren(ctx.methodBody());
                 parentStack.pop();
+                resetLocalVars();
             }
             return null;
         }
@@ -501,8 +527,13 @@ public class JavaASTBuilder {
                 AST.addVertex(typeNode);
                 AST.addEdge(varNode, typeNode);
                 //
+                ++varsCounter;
                 ASNode nameNode = new ASNode(ASNode.Type.NAME);
-                nameNode.setCode(varctx.variableDeclaratorId().getText());
+                String varName = varctx.variableDeclaratorId().getText();
+                String normalized = "$VAR" + varsCounter;
+                vars.put(varName, normalized);
+                nameNode.setCode(varName);
+                nameNode.setNormalizedCode(normalized);
                 nameNode.setLineOfCode(varctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(nameNode);
                 AST.addEdge(varNode, nameNode);
@@ -517,11 +548,16 @@ public class JavaASTBuilder {
             }
             return null;
         }
+
+        //=====================================================================//
+        //                           STATEMENTS                                //
+        //=====================================================================//
         
-        private void visitStatement(ParserRuleContext ctx) {
+        private void visitStatement(ParserRuleContext ctx, String normalized) {
             Logger.printf(Logger.Level.DEBUG, "Visiting: (%d)  %s", ctx.getStart().getLine(), getOriginalCodeText(ctx));
             ASNode statementNode = new ASNode(ASNode.Type.STATEMENT);
             statementNode.setCode(getOriginalCodeText(ctx));
+            statementNode.setNormalizedCode(normalized);
             statementNode.setLineOfCode(ctx.getStart().getLine());
             Logger.debug("Adding statement " + ctx.getStart().getLine());
             AST.addVertex(statementNode);
@@ -530,37 +566,63 @@ public class JavaASTBuilder {
         
         @Override
         public String visitStatementExpression(JavaParser.StatementExpressionContext ctx) {
-            visitStatement(ctx);
+            // statementExpression :  expression
+            visitStatement(ctx, visit(ctx.expression()));
             return null;
         }
         
         @Override
         public String visitBreakStatement(JavaParser.BreakStatementContext ctx) {
-            visitStatement(ctx);
+            if (ctx.Identifier() == null)
+                visitStatement(ctx, null);
+            else
+                visitStatement(ctx, "break $LABEL");
             return null;
         }
         
         @Override
         public String visitContinueStatement(JavaParser.ContinueStatementContext ctx) {
-            visitStatement(ctx);
+            if (ctx.Identifier() == null)
+                visitStatement(ctx, null);
+            else
+                visitStatement(ctx, "continue $LABEL");
             return null;
         }
         
         @Override
         public String visitReturnStatement(JavaParser.ReturnStatementContext ctx) {
-            visitStatement(ctx);
+            if (ctx.expression() == null)
+                visitStatement(ctx, null);
+            else
+                visitStatement(ctx, "return " + visit(ctx.expression()));
             return null;
         }
         
         @Override
         public String visitThrowStatement(JavaParser.ThrowStatementContext ctx) {
-            visitStatement(ctx);
+            visitStatement(ctx, "throw " + visit(ctx.expression()));
             return null;
         }
         
         @Override
         public String visitSynchBlockStatement(JavaParser.SynchBlockStatementContext ctx) {
-            visitStatement(ctx);
+            // synchBlockStatement :  'synchronized' parExpression block
+            ASNode synchNode = new ASNode(ASNode.Type.SYNC);
+            synchNode.setLineOfCode(ctx.getStart().getLine());
+            AST.addVertex(synchNode);
+            AST.addEdge(parentStack.peek(), synchNode);
+            //
+            parentStack.push(synchNode);
+            visitStatement(ctx.parExpression().expression(), visit(ctx.parExpression().expression()));
+            parentStack.pop();
+            //
+            ASNode block = new ASNode(ASNode.Type.BLOCK);
+            block.setLineOfCode(ctx.block().getStart().getLine());
+            AST.addVertex(block);
+            AST.addEdge(synchNode, block);
+            parentStack.push(block);
+            visit(ctx.block());
+            parentStack.pop();
             return null;
         }
         
@@ -949,6 +1011,21 @@ public class JavaASTBuilder {
             AST.addEdge(switchNode, caseNode);
             AST.addEdge(caseNode, blockNode);
         }
+        
+        //=====================================================================//
+        //                          EXPRESSIONS                                //
+        //=====================================================================//
+        
+        @Override
+        public String visitExprMethodInvocation(JavaParser.ExprMethodInvocationContext ctx) { 
+            // exprMethodInvocation :  expression '(' expressionList? ')'
+            return null;
+        }
+        
+
+        //=====================================================================//
+        //                          PRIVATE METHODS                            //
+        //=====================================================================//
 
         /**
          * Get the original program text for the given parser-rule context. 
@@ -959,6 +1036,11 @@ public class JavaASTBuilder {
             int stop = ctx.stop.getStopIndex();
             Interval interval = new Interval(start, stop);
             return ctx.start.getInputStream().getText(interval);
+        }
+        
+        private void resetLocalVars() {
+            vars.clear();
+            varsCounter = 0;
         }
     }
 }
