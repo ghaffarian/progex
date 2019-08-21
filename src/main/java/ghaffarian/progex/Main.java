@@ -10,7 +10,7 @@ import ghaffarian.nanologger.Logger;
  */
 public class Main {
 	
-	public static String VERSION = "3.0.0";
+	public static String VERSION = "3.2.0";
 
     /**
      * @param args the command line arguments
