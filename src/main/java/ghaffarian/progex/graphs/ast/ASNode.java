@@ -109,7 +109,10 @@ public class ASNode {
     }
 
     public final String getNormalizedCode() {
-        return (String) properties.get("normalized");
+        String normalized = (String) properties.get("normalized");
+        if (normalized != null && !normalized.isEmpty())
+            return normalized;
+        return (String) properties.get("code");
     }
     
     public final void setProperty(String key, Object value) {
