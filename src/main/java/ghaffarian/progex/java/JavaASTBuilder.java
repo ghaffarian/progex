@@ -20,6 +20,7 @@ import ghaffarian.progex.java.parser.JavaLexer;
 import ghaffarian.progex.java.parser.JavaParser;
 import ghaffarian.nanologger.Logger;
 import java.util.LinkedHashMap;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * Abstract Syntax Tree (AST) builder for Java programs.
@@ -132,7 +133,7 @@ public class JavaASTBuilder {
             Logger.debug("Adding package");
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
-            return null;
+            return "";
         }
 
         @Override
@@ -150,7 +151,7 @@ public class JavaASTBuilder {
             Logger.debug("Adding import " + qualifiedName);
             AST.addVertex(node);
             AST.addEdge(parentStack.peek(), node);
-            return null;
+            return "";
         }
 
         @Override
@@ -166,7 +167,7 @@ public class JavaASTBuilder {
                 typeModifier += modifierCtx.getText() + " ";
             typeModifier = typeModifier.trim();
             visitChildren(ctx);
-            return null;
+            return "";
         }
 
         @Override
@@ -224,7 +225,7 @@ public class JavaASTBuilder {
             parentStack.push(classNode);
             visit(ctx.classBody());
             parentStack.pop();
-            return null;
+            return "";
         }
 
         @Override
@@ -295,7 +296,7 @@ public class JavaASTBuilder {
                     visitChildren(ctx.memberDeclaration());
                 }
             }
-            return null;
+            return "";
         }
         
         @Override
@@ -328,8 +329,12 @@ public class JavaASTBuilder {
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
+                    ++varsCounter;
                     ASNode name = new ASNode(ASNode.Type.NAME);
+                    String normalized = "$VARL_" + varsCounter;
+                    vars.put(paramctx.variableDeclaratorId().Identifier().getText(), normalized);
                     name.setCode(paramctx.variableDeclaratorId().getText());
+                    name.setNormalizedCode(normalized);
                     name.setLineOfCode(paramctx.variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
@@ -346,8 +351,12 @@ public class JavaASTBuilder {
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
+                    ++varsCounter;
                     ASNode name = new ASNode(ASNode.Type.NAME);
+                    String normalized = "$VARL_" + varsCounter;
+                    vars.put(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().Identifier().getText(), normalized);
                     name.setCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getText());
+                    name.setNormalizedCode(normalized);
                     name.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
@@ -363,7 +372,7 @@ public class JavaASTBuilder {
             visitChildren(ctx.constructorBody().block());
             parentStack.pop();
             resetLocalVars();
-            return null;
+            return "";
         }
 
         @Override
@@ -387,10 +396,9 @@ public class JavaASTBuilder {
                 //
                 ++fieldsCounter;
                 ASNode name = new ASNode(ASNode.Type.NAME);
-                String fieldName = varctx.variableDeclaratorId().getText();
-                String normalized = "$FIELD" + fieldsCounter;
-                fields.put(fieldName, normalized);
-                name.setCode(fieldName);
+                String normalized = "$VARF_" + fieldsCounter;
+                fields.put(varctx.variableDeclaratorId().Identifier().getText(), normalized);
+                name.setCode(varctx.variableDeclaratorId().getText());
                 name.setNormalizedCode(normalized);
                 name.setLineOfCode(varctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(name);
@@ -399,12 +407,13 @@ public class JavaASTBuilder {
                 if (varctx.variableInitializer() != null) {
                     ASNode initNode = new ASNode(ASNode.Type.INIT_VALUE);
                     initNode.setCode("= " + getOriginalCodeText(varctx.variableInitializer()));
+                    initNode.setNormalizedCode("= " + visit(varctx.variableInitializer()));
                     initNode.setLineOfCode(varctx.variableInitializer().getStart().getLine());
                     AST.addVertex(initNode);
                     AST.addEdge(parentStack.peek(), initNode);
                 }
             }
-            return null;
+            return "";
         }
 
         @Override
@@ -439,7 +448,7 @@ public class JavaASTBuilder {
             ++methodsCounter;
             ASNode nameNode = new ASNode(ASNode.Type.NAME);
             String methodName = ctx.Identifier().getText();
-            String normalized = "$METHOD" + methodsCounter;
+            String normalized = "$METHOD_" + methodsCounter;
             methods.put(methodName, normalized);
             nameNode.setCode(methodName);
             nameNode.setNormalizedCode(normalized);
@@ -468,8 +477,12 @@ public class JavaASTBuilder {
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
+                    ++varsCounter;
                     ASNode name = new ASNode(ASNode.Type.NAME);
+                    normalized = "$VARL_" + varsCounter;
+                    vars.put(paramctx.variableDeclaratorId().Identifier().getText(), normalized);
                     name.setCode(paramctx.variableDeclaratorId().getText());
+                    name.setNormalizedCode(normalized);
                     name.setLineOfCode(paramctx.variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
@@ -486,8 +499,12 @@ public class JavaASTBuilder {
                     AST.addVertex(type);
                     AST.addEdge(varNode, type);
                     //
+                    ++varsCounter;
                     ASNode name = new ASNode(ASNode.Type.NAME);
+                    normalized = "$VARL_" + varsCounter;
+                    vars.put(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().Identifier().getText(), normalized);
                     name.setCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getText());
+                    name.setNormalizedCode(normalized);
                     name.setLineOfCode(ctx.formalParameters().formalParameterList().lastFormalParameter().variableDeclaratorId().getStart().getLine());
                     AST.addVertex(name);
                     AST.addEdge(varNode, name);
@@ -506,7 +523,7 @@ public class JavaASTBuilder {
                 parentStack.pop();
                 resetLocalVars();
             }
-            return null;
+            return "";
         }
 
         @Override
@@ -529,10 +546,9 @@ public class JavaASTBuilder {
                 //
                 ++varsCounter;
                 ASNode nameNode = new ASNode(ASNode.Type.NAME);
-                String varName = varctx.variableDeclaratorId().getText();
-                String normalized = "$VAR" + varsCounter;
-                vars.put(varName, normalized);
-                nameNode.setCode(varName);
+                String normalized = "$VARL_" + varsCounter;
+                vars.put(varctx.variableDeclaratorId().Identifier().getText(), normalized);
+                nameNode.setCode(varctx.variableDeclaratorId().getText());
                 nameNode.setNormalizedCode(normalized);
                 nameNode.setLineOfCode(varctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(nameNode);
@@ -541,12 +557,13 @@ public class JavaASTBuilder {
                 if (varctx.variableInitializer() != null) {
                     ASNode initNode = new ASNode(ASNode.Type.INIT_VALUE);
                     initNode.setCode("= " + getOriginalCodeText(varctx.variableInitializer()));
+                    initNode.setNormalizedCode("= " + visit(varctx.variableInitializer()));
                     initNode.setLineOfCode(varctx.variableInitializer().getStart().getLine());
                     AST.addVertex(initNode);
                     AST.addEdge(varNode, initNode);
                 }
             }
-            return null;
+            return "";
         }
 
         //=====================================================================//
@@ -568,7 +585,7 @@ public class JavaASTBuilder {
         public String visitStatementExpression(JavaParser.StatementExpressionContext ctx) {
             // statementExpression :  expression
             visitStatement(ctx, visit(ctx.expression()));
-            return null;
+            return "";
         }
         
         @Override
@@ -577,7 +594,7 @@ public class JavaASTBuilder {
                 visitStatement(ctx, null);
             else
                 visitStatement(ctx, "break $LABEL");
-            return null;
+            return "";
         }
         
         @Override
@@ -586,7 +603,7 @@ public class JavaASTBuilder {
                 visitStatement(ctx, null);
             else
                 visitStatement(ctx, "continue $LABEL");
-            return null;
+            return "";
         }
         
         @Override
@@ -595,13 +612,13 @@ public class JavaASTBuilder {
                 visitStatement(ctx, null);
             else
                 visitStatement(ctx, "return " + visit(ctx.expression()));
-            return null;
+            return "";
         }
         
         @Override
         public String visitThrowStatement(JavaParser.ThrowStatementContext ctx) {
             visitStatement(ctx, "throw " + visit(ctx.expression()));
-            return null;
+            return "";
         }
         
         @Override
@@ -623,7 +640,7 @@ public class JavaASTBuilder {
             parentStack.push(block);
             visit(ctx.block());
             parentStack.pop();
-            return null;
+            return "";
         }
         
         @Override
@@ -636,6 +653,7 @@ public class JavaASTBuilder {
             //
             ASNode labelName = new ASNode(ASNode.Type.NAME);
             labelName.setCode(ctx.Identifier().getText());
+            labelName.setNormalizedCode("$LABEL");
             labelName.setLineOfCode(ctx.getStart().getLine());
             AST.addVertex(labelName);
             AST.addEdge(labelNode, labelName);
@@ -643,7 +661,7 @@ public class JavaASTBuilder {
             parentStack.push(labelNode);
             visit(ctx.statement());
             parentStack.pop();
-            return null;
+            return "";
         }
         
         @Override
@@ -656,6 +674,7 @@ public class JavaASTBuilder {
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
             cond.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setNormalizedCode(visit(ctx.parExpression().expression()));
             cond.setLineOfCode(ctx.parExpression().getStart().getLine());
             AST.addVertex(cond);
             AST.addEdge(ifNode, cond);
@@ -677,7 +696,7 @@ public class JavaASTBuilder {
                 visit(ctx.statement(1));
                 parentStack.pop();
             }
-            return null;
+            return "";
         }
 
         @Override
@@ -702,14 +721,19 @@ public class JavaASTBuilder {
                 AST.addVertex(varType);
                 AST.addEdge(forNode, varType);
                 //
+                ++varsCounter;
                 ASNode varID = new ASNode(ASNode.Type.NAME);
+                String normalized = "$VARL_" + varsCounter;
+                vars.put(ctx.forControl().enhancedForControl().variableDeclaratorId().Identifier().getText(), normalized);
                 varID.setCode(ctx.forControl().enhancedForControl().variableDeclaratorId().getText());
+                varID.setNormalizedCode(normalized);
                 varID.setLineOfCode(ctx.forControl().enhancedForControl().variableDeclaratorId().getStart().getLine());
                 AST.addVertex(varID);
                 AST.addEdge(forNode, varID);
                 //
                 ASNode expr = new ASNode(ASNode.Type.IN);
                 expr.setCode(getOriginalCodeText(ctx.forControl().enhancedForControl().expression()));
+                expr.setNormalizedCode(visit(ctx.forControl().enhancedForControl().expression()));
                 expr.setLineOfCode(ctx.forControl().enhancedForControl().expression().getStart().getLine());
                 AST.addVertex(expr);
                 AST.addEdge(forNode, expr);
@@ -723,15 +747,36 @@ public class JavaASTBuilder {
                 // for init
                 if (ctx.forControl().forInit() != null) {
                     ASNode forInit = new ASNode(ASNode.Type.FOR_INIT);
-                    forInit.setCode(getOriginalCodeText(ctx.forControl().forInit()));
-                    forInit.setLineOfCode(ctx.forControl().forInit().getStart().getLine());
                     AST.addVertex(forInit);
                     AST.addEdge(forNode, forInit);
+                    if (ctx.forControl().forInit().localVariableDeclaration() != null) {
+                        parentStack.push(forInit);
+                        visit(ctx.forControl().forInit().localVariableDeclaration());
+                        parentStack.pop();
+                    } else {
+                        ASNode expr = new ASNode(ASNode.Type.STATEMENT);
+                        expr.setCode(getOriginalCodeText(ctx.forControl().forInit().expressionList().expression(0)));
+                        expr.setNormalizedCode(visit(ctx.forControl().forInit().expressionList().expression(0)));
+                        expr.setLineOfCode(ctx.forControl().forInit().expressionList().expression(0).getStart().getLine());
+                        AST.addVertex(expr);
+                        AST.addEdge(forInit, expr);
+                        //
+                        int len = ctx.forControl().forInit().expressionList().expression().size();
+                        for (int i = 1; i < len; ++i) {
+                            expr = new ASNode(ASNode.Type.STATEMENT);
+                            expr.setCode(getOriginalCodeText(ctx.forControl().forInit().expressionList().expression(i)));
+                            expr.setNormalizedCode(visit(ctx.forControl().forInit().expressionList().expression(i)));
+                            expr.setLineOfCode(ctx.forControl().forInit().expressionList().expression(i).getStart().getLine());
+                            AST.addVertex(expr);
+                            AST.addEdge(forInit, expr);
+                        }
+                    }
                 }
                 // for expr
                 if (ctx.forControl().expression() != null) {
                     ASNode forExpr = new ASNode(ASNode.Type.CONDITION);
                     forExpr.setCode(getOriginalCodeText(ctx.forControl().expression()));
+                    forExpr.setNormalizedCode(visit(ctx.forControl().expression()));
                     forExpr.setLineOfCode(ctx.forControl().expression().getStart().getLine());
                     AST.addVertex(forExpr);
                     AST.addEdge(forNode, forExpr);
@@ -739,10 +784,25 @@ public class JavaASTBuilder {
                 // for update
                 if (ctx.forControl().forUpdate() != null) {
                     ASNode forUpdate = new ASNode(ASNode.Type.FOR_UPDATE);
-                    forUpdate.setCode(getOriginalCodeText(ctx.forControl().forUpdate()));
-                    forUpdate.setLineOfCode(ctx.forControl().forUpdate().getStart().getLine());
                     AST.addVertex(forUpdate);
                     AST.addEdge(forNode, forUpdate);
+                    //
+                    ASNode update = new ASNode(ASNode.Type.STATEMENT);
+                    update.setCode(getOriginalCodeText(ctx.forControl().forUpdate().expressionList().expression(0)));
+                    update.setNormalizedCode(visit(ctx.forControl().forUpdate().expressionList().expression(0)));
+                    update.setLineOfCode(ctx.forControl().forUpdate().expressionList().expression(0).getStart().getLine());
+                    AST.addVertex(update);
+                    AST.addEdge(forUpdate, update);
+                    //
+                    int len = ctx.forControl().forUpdate().expressionList().expression().size();
+                    for (int i = 1; i < len; ++i) {
+                        update = new ASNode(ASNode.Type.STATEMENT);
+                        update.setCode(getOriginalCodeText(ctx.forControl().forUpdate().expressionList().expression(i)));
+                        update.setNormalizedCode(visit(ctx.forControl().forUpdate().expressionList().expression(i)));
+                        update.setLineOfCode(ctx.forControl().forUpdate().expressionList().expression(i).getStart().getLine());
+                        AST.addVertex(update);
+                        AST.addEdge(forUpdate, update);
+                    }
                 }
             }
             //
@@ -753,7 +813,7 @@ public class JavaASTBuilder {
             parentStack.push(block);
             visit(ctx.statement());
             parentStack.pop();
-            return null;
+            return "";
         }
         
         @Override
@@ -766,6 +826,7 @@ public class JavaASTBuilder {
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
             cond.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setNormalizedCode(visit(ctx.parExpression().expression()));
             cond.setLineOfCode(ctx.parExpression().expression().getStart().getLine());
             AST.addVertex(cond);
             AST.addEdge(whileNode, cond);
@@ -777,7 +838,7 @@ public class JavaASTBuilder {
             parentStack.push(block);
             visit(ctx.statement());
             parentStack.pop();
-            return null;
+            return "";
         }
 
         @Override
@@ -790,6 +851,7 @@ public class JavaASTBuilder {
             //
             ASNode cond = new ASNode(ASNode.Type.CONDITION);
             cond.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            cond.setNormalizedCode(visit(ctx.parExpression().expression()));
             cond.setLineOfCode(ctx.parExpression().expression().getStart().getLine());
             AST.addVertex(cond);
             AST.addEdge(doWhileNode, cond);
@@ -801,7 +863,7 @@ public class JavaASTBuilder {
             parentStack.push(block);
             visit(ctx.statement());
             parentStack.pop();
-            return null;
+            return "";
         }
 
         @Override
@@ -833,8 +895,12 @@ public class JavaASTBuilder {
                     AST.addVertex(catchType);
                     AST.addEdge(catchNode, catchType);
                     //
+                    ++varsCounter;
                     ASNode catchName = new ASNode(ASNode.Type.NAME);
+                    String normalized = "$VARL_" + varsCounter;
+                    vars.put(catchx.Identifier().getText(), normalized);
                     catchName.setCode(catchx.Identifier().getText());
+                    catchName.setNormalizedCode(normalized);
                     catchName.setLineOfCode(catchx.getStart().getLine());
                     AST.addVertex(catchName);
                     AST.addEdge(catchNode, catchName);
@@ -858,7 +924,7 @@ public class JavaASTBuilder {
                 visit(ctx.finallyBlock().block());
                 parentStack.pop();
             }
-            return null;
+            return "";
         }
 
         @Override
@@ -889,14 +955,19 @@ public class JavaASTBuilder {
                 AST.addVertex(resType);
                 AST.addEdge(varNode, resType);
                 //
+                ++varsCounter;
                 ASNode resName = new ASNode(ASNode.Type.NAME);
+                String normalized = "$VARL_" + varsCounter;
+                vars.put(resctx.variableDeclaratorId().Identifier().getText(), normalized);
                 resName.setCode(resctx.variableDeclaratorId().getText());
+                resName.setNormalizedCode(normalized);
                 resName.setLineOfCode(resctx.variableDeclaratorId().getStart().getLine());
                 AST.addVertex(resName);
                 AST.addEdge(varNode, resName);
                 //
                 ASNode resInit = new ASNode(ASNode.Type.INIT_VALUE);
-                resInit.setCode(getOriginalCodeText(resctx.expression()));
+                resInit.setCode("= " + getOriginalCodeText(resctx.expression()));
+                resInit.setNormalizedCode("= " + visit(resctx.expression()));
                 resInit.setLineOfCode(resctx.expression().getStart().getLine());
                 AST.addVertex(resInit);
                 AST.addEdge(varNode, resInit);
@@ -923,8 +994,12 @@ public class JavaASTBuilder {
                     AST.addVertex(catchType);
                     AST.addEdge(catchNode, catchType);
                     //
+                    ++varsCounter;
                     ASNode catchName = new ASNode(ASNode.Type.NAME);
+                    String normalized = "$VARL_" + varsCounter;
+                    vars.put(catchx.Identifier().getText(), normalized);
                     catchName.setCode(catchx.Identifier().getText());
+                    catchName.setNormalizedCode(normalized);
                     catchName.setLineOfCode(catchx.catchType().getStart().getLine());
                     AST.addVertex(catchName);
                     AST.addEdge(catchNode, catchName);
@@ -948,7 +1023,7 @@ public class JavaASTBuilder {
                 visit(ctx.finallyBlock().block());
                 parentStack.pop();
             }
-            return null;
+            return "";
         }
 
         @Override
@@ -966,6 +1041,7 @@ public class JavaASTBuilder {
             //
             ASNode varName = new ASNode(ASNode.Type.NAME);
             varName.setCode(getOriginalCodeText(ctx.parExpression().expression()));
+            varName.setNormalizedCode(visit(ctx.parExpression().expression()));
             varName.setLineOfCode(ctx.parExpression().expression().getStart().getLine());
             AST.addVertex(varName);
             AST.addEdge(switchNode, varName);
@@ -990,7 +1066,7 @@ public class JavaASTBuilder {
                 for (JavaParser.SwitchLabelContext lblctx : ctx.switchLabel())
                     visitSwitchLabel(lblctx, switchNode, blockNode);
             }
-            return null;
+            return "";
         }
         
         private void visitSwitchLabel(JavaParser.SwitchLabelContext lblctx, ASNode switchNode, ASNode blockNode) {
@@ -1017,11 +1093,310 @@ public class JavaASTBuilder {
         //=====================================================================//
         
         @Override
-        public String visitExprMethodInvocation(JavaParser.ExprMethodInvocationContext ctx) { 
-            // exprMethodInvocation :  expression '(' expressionList? ')'
-            return null;
+        public String visitExprPrimary(JavaParser.ExprPrimaryContext ctx) {
+            // exprPrimary :  primary
+            //
+            // primary :  '(' expression ')'
+            //         |  'this'  |  'super'  |  literal  |  Identifier
+            //         |   typeType '.' 'class'  |  'void' '.' 'class'
+            //         |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
+            //
+            // nonWildcardTypeArguments :  '<' typeList '>'
+            //
+            // explicitGenericInvocationSuffix :  'super' superSuffix  |  Identifier arguments
+            //
+            JavaParser.PrimaryContext primary = ctx.primary();
+            if (primary.expression() != null)
+                return "(" + visit(primary.expression()) + ")";
+            if (primary.Identifier() != null)
+                return normalizedIdentifier(primary.Identifier());
+            if (primary.nonWildcardTypeArguments() != null) {
+                if (primary.arguments() != null)
+                    return getOriginalCodeText(primary.nonWildcardTypeArguments()) + "this" + visit(primary.arguments());
+                else {
+                    String suffix;
+                    if (primary.explicitGenericInvocationSuffix().Identifier() != null)
+                        suffix = normalizedIdentifier(primary.explicitGenericInvocationSuffix().Identifier())
+                                + visit(primary.explicitGenericInvocationSuffix().arguments());
+                    else
+                        suffix = "super" + visit(primary.explicitGenericInvocationSuffix().superSuffix());
+                    return getOriginalCodeText(primary.nonWildcardTypeArguments()) + suffix;
+                }
+            }
+            return getOriginalCodeText(primary);
         }
         
+        @Override
+        public String visitExprDotID(JavaParser.ExprDotIDContext ctx) {
+            // exprDotID :  expression '.' Identifier
+            return visit(ctx.expression()) + "." + normalizedIdentifier(ctx.Identifier());
+        }
+        
+        @Override
+        public String visitExprDotThis(JavaParser.ExprDotThisContext ctx) {
+            // exprDotThis :  expression '.' 'this'
+            return visit(ctx.expression()) + ".this";
+        }
+        
+        @Override
+        public String visitExprDotNewInnerCreator(JavaParser.ExprDotNewInnerCreatorContext ctx) {
+            // exprDotNewInnerCreator :  expression '.' 'new' nonWildcardTypeArguments? innerCreator
+            //
+            // innerCreator :  Identifier nonWildcardTypeArgumentsOrDiamond? classCreatorRest
+            //
+            // classCreatorRest :  arguments classBody?
+            //
+            return visit(ctx.expression()) + ".new " + getOriginalCodeText(ctx.nonWildcardTypeArguments())
+                    + normalizedIdentifier(ctx.innerCreator().Identifier()) 
+                    + getOriginalCodeText(ctx.innerCreator().nonWildcardTypeArgumentsOrDiamond())
+                    + visit(ctx.innerCreator().classCreatorRest().arguments())
+                    + visit(ctx.innerCreator().classCreatorRest().classBody());
+        }
+        
+        @Override
+        public String visitExprDotSuper(JavaParser.ExprDotSuperContext ctx) {
+            // exprDotSuper :  expression '.' 'super' superSuffix
+            return visit(ctx.expression()) + ".super" + visit(ctx.superSuffix());
+        }
+        
+        @Override
+        public String visitSuperSuffix(JavaParser.SuperSuffixContext ctx) {
+            // superSuffix :  arguments  |  '.' Identifier arguments?
+            String superSuffix = "";
+            if (ctx.Identifier() != null)
+                superSuffix = "." + normalizedIdentifier(ctx.Identifier());
+            if (ctx.arguments() != null)
+                superSuffix += visit(ctx.arguments());
+            return superSuffix;
+        }
+        
+        @Override
+        public String visitArguments(JavaParser.ArgumentsContext ctx) {
+            // arguments :  '(' expressionList? ')'
+            if (ctx.expressionList() == null)
+                return "()";
+            return "(" + visit(ctx.expressionList()) + ")";
+        }
+        
+        @Override
+        public String visitExprDotGenInvok(JavaParser.ExprDotGenInvokContext ctx) {
+            // exprDotGenInvok :  expression '.' explicitGenericInvocation
+            //
+            // explicitGenericInvocation :  nonWildcardTypeArguments explicitGenericInvocationSuffix
+            //
+            // nonWildcardTypeArguments :  '<' typeList '>'
+            //
+            // explicitGenericInvocationSuffix :  'super' superSuffix  |  Identifier arguments
+            //
+            String suffix;
+            if (ctx.explicitGenericInvocation().explicitGenericInvocationSuffix().Identifier() != null)
+                suffix = normalizedIdentifier(ctx.explicitGenericInvocation().explicitGenericInvocationSuffix().Identifier())
+                        + visit(ctx.explicitGenericInvocation().explicitGenericInvocationSuffix().arguments());
+            else
+                suffix = "super" + visit(ctx.explicitGenericInvocation().explicitGenericInvocationSuffix().superSuffix());
+            
+            return visit(ctx.expression()) + "." 
+                    + getOriginalCodeText(ctx.explicitGenericInvocation().nonWildcardTypeArguments())
+                    + suffix;
+        }
+        
+        @Override
+        public String visitExprArrayIndexing(JavaParser.ExprArrayIndexingContext ctx) {
+            // exprArrayIndexing :  expression '[' expression ']'
+            return visit(ctx.expression(0)) + "[" + visit(ctx.expression(1)) + "]";
+        }
+        
+        @Override
+        public String visitExprMethodInvocation(JavaParser.ExprMethodInvocationContext ctx) { 
+            // exprMethodInvocation :  expression '(' expressionList? ')'
+            return visit(ctx.expression()) + "(" + (ctx.expressionList() != null ? visit(ctx.expressionList()) : "") + ")";
+        }
+        
+        @Override
+        public String visitExprNewCreator(JavaParser.ExprNewCreatorContext ctx) {
+            // exprNewCreator :  'new' creator
+            //
+            // creator :  nonWildcardTypeArguments createdName classCreatorRest  
+            //         |  createdName (arrayCreatorRest | classCreatorRest)
+            //
+            // createdName :  Identifier typeArgumentsOrDiamond? ('.' Identifier typeArgumentsOrDiamond?)*
+            //             |   primitiveType
+            //
+            // classCreatorRest :  arguments classBody?
+            //
+            // arrayCreatorRest :  '[' (  ']' ('[' ']')* arrayInitializer 
+            //                            | expression ']' ('[' expression ']')* ('[' ']')*   )
+            //
+            // arrayInitializer :  '{' (variableInitializer (',' variableInitializer)* (',')? )? '}'
+            //
+            // variableInitializer :  arrayInitializer  |  expression
+            return visitChildren(ctx);
+        }
+        
+        @Override
+        public String visitExprCasting(JavaParser.ExprCastingContext ctx) {
+            // exprCasting :  '(' typeType ')' expression
+            return "(" + getOriginalCodeText(ctx.typeType()) + ") " + visit(ctx.expression());
+        }
+        
+        @Override
+        public String visitExprPostUnaryOp(JavaParser.ExprPostUnaryOpContext ctx) {
+            // exprPostUnaryOp :  expression ('++' | '--')
+            return visit(ctx.expression())  +  (ctx.getText().endsWith("++") ? "++" : "--");
+        }
+        
+        @Override
+        public String visitExprPreUnaryOp(JavaParser.ExprPreUnaryOpContext ctx) {
+            // exprPreUnaryOp :  ('+'|'-'|'++'|'--') expression
+            String op;
+            if (ctx.getText().startsWith("+"))
+                op = ctx.getText().startsWith("++") ? "++" : "+";
+            else
+                op = ctx.getText().startsWith("--") ? "--" : "-";
+            return op + visit(ctx.expression());
+        }
+        
+        @Override
+        public String visitExprNegation(JavaParser.ExprNegationContext ctx) {
+            // exprNegation :  ('~'|'!') expression
+            return (ctx.getText().startsWith("~") ? "~" : "!")  +  visit(ctx.expression());
+        }
+        
+        @Override
+        public String visitExprMulDivMod(JavaParser.ExprMulDivModContext ctx) {
+            // exprMulDivMod :  expression ('*'|'/'|'%') expression
+            char op = ctx.getText().substring(ctx.expression(0).getText().length()).charAt(0);
+            return visit(ctx.expression(0)) + " " + op + " " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprAddSub(JavaParser.ExprAddSubContext ctx) {
+            // exprAddSub :  expression ('+'|'-') expression
+            char op = ctx.getText().substring(ctx.expression(0).getText().length()).charAt(0);
+            return visit(ctx.expression(0)) + " " + op + " " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprBitShift(JavaParser.ExprBitShiftContext ctx) {
+            // exprBitShift :  expression ('<' '<' | '>' '>' '>' | '>' '>') expression
+            String sub = ctx.getText().substring(ctx.expression(0).getText().length());
+            String op;
+            if (sub.startsWith(">>>"))
+                op = ">>>";
+            else
+                op = sub.substring(0, 2);
+            return visit(ctx.expression(0)) + " " + op + " " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprComparison(JavaParser.ExprComparisonContext ctx) {
+            // exprComparison :  expression ('<=' | '>=' | '>' | '<') expression
+            String sub = ctx.getText().substring(ctx.expression(0).getText().length());
+            String op;
+            if (sub.startsWith(">")) {
+                if (sub.startsWith(">="))
+                    op = " >= ";
+                else
+                    op = " > ";
+            } else {
+                if (sub.startsWith("<="))
+                    op = " <= ";
+                else
+                    op = " < ";
+            }
+            return visit(ctx.expression(0)) + op + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprInstanceOf(JavaParser.ExprInstanceOfContext ctx) {
+            // exprInstanceOf :  expression 'instanceof' typeType
+            return visit(ctx.expression()) + " instanceof " + getOriginalCodeText(ctx.typeType());
+        }
+        
+        @Override
+        public String visitExprEquality(JavaParser.ExprEqualityContext ctx) {
+            // exprEquality :  expression ('==' | '!=') expression
+            String sub = ctx.getText().substring(ctx.expression(0).getText().length());
+            String op;
+            if (sub.startsWith("=="))
+                op = " == ";
+            else
+                op = " != ";
+            return visit(ctx.expression(0)) + op + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprBitAnd(JavaParser.ExprBitAndContext ctx) {
+            // exprBitAnd :  expression '&' expression
+            return visit(ctx.expression(0)) + " & " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprBitXOR(JavaParser.ExprBitXORContext ctx) {
+            // exprBitXOR :  expression '^' expression
+            return visit(ctx.expression(0)) + " ^ " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprBitOr(JavaParser.ExprBitOrContext ctx) {
+            // exprBitOr :  expression '|' expression
+            return visit(ctx.expression(0)) + " | " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprLogicAnd(JavaParser.ExprLogicAndContext ctx) {
+            // exprLogicAnd :  expression '&&' expression
+            return visit(ctx.expression(0)) + " && " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprLogicOr(JavaParser.ExprLogicOrContext ctx) {
+            // exprLogicOr :  expression '||' expression
+            return visit(ctx.expression(0)) + " || " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitExprConditional(JavaParser.ExprConditionalContext ctx) {
+            // exprConditional :  expression '?' expression ':' expression
+            return visit(ctx.expression(0)) + " ? " + visit(ctx.expression(1)) + " : " + visit(ctx.expression(2));
+        }
+        
+        @Override
+        public String visitExprAssignment(JavaParser.ExprAssignmentContext ctx) {
+            // exprAssignment :  expression  ( '='  | '+='  | '-='   | '*='  | '/=' | '&=' | 
+            //                                 '|=' | '^=' | '>>=' | '>>>=' | '<<=' | '%=' )  expression
+            return visit(ctx.expression(0)) + " ?= " + visit(ctx.expression(1));
+        }
+        
+        @Override
+        public String visitVariableInitializer(JavaParser.VariableInitializerContext ctx) {
+            // variableInitializer :  arrayInitializer  |  expression
+            if (ctx.expression() != null)
+                return visit(ctx.expression());
+            else
+                return visit(ctx.arrayInitializer());
+        }
+        
+        @Override
+        public String visitArrayInitializer(JavaParser.ArrayInitializerContext ctx) {
+            // arrayInitializer :  '{' (variableInitializer (',' variableInitializer)* (',')? )? '}'
+            if (ctx.variableInitializer().size() > 0) {
+                StringBuilder normalized = new StringBuilder("{" + visit(ctx.variableInitializer(0)));
+                for (int i = 1; i < ctx.variableInitializer().size(); ++i)
+                    normalized.append(", ").append(visit(ctx.variableInitializer(i)));
+                return normalized.append("}").toString();
+            }
+            return "{ }";
+        }
+        
+        @Override
+        public String visitExpressionList(JavaParser.ExpressionListContext ctx) {
+            // expressionList :  expression (',' expression)*
+            StringBuilder normalized = new StringBuilder(visit(ctx.expression(0)));
+            for (int i = 1; i < ctx.expression().size(); ++i)
+                normalized.append(", ").append(visit(ctx.expression(i)));
+            return normalized.toString();
+        }
 
         //=====================================================================//
         //                          PRIVATE METHODS                            //
@@ -1032,6 +1407,8 @@ public class JavaASTBuilder {
          * This is required for preserving white-spaces.
          */
         private String getOriginalCodeText(ParserRuleContext ctx) {
+            if (ctx == null)
+                return "";
             int start = ctx.start.getStartIndex();
             int stop = ctx.stop.getStopIndex();
             Interval interval = new Interval(start, stop);
@@ -1041,6 +1418,17 @@ public class JavaASTBuilder {
         private void resetLocalVars() {
             vars.clear();
             varsCounter = 0;
+        }
+
+        private String normalizedIdentifier(TerminalNode id) {
+            String normalized = vars.get(id.getText());
+            if (normalized == null || normalized.isEmpty())
+                normalized = fields.get(id.getText());
+            if (normalized == null || normalized.isEmpty())
+                normalized = methods.get(id.getText());
+            if (normalized == null || normalized.isEmpty())
+                normalized = id.getText();
+            return normalized;
         }
     }
 }
