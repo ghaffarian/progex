@@ -1,7 +1,7 @@
 /*** In The Name of Allah ***/
 package ghaffarian.progex.graphs.ast;
 
-import ghaffarian.graphs.*;
+import ghaffarian.graphs.Edge;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -10,13 +10,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import ghaffarian.progex.utils.StringUtils;
 import ghaffarian.nanologger.Logger;
+import ghaffarian.progex.graphs.AbstractProgramGraph;
+import java.io.IOException;
 
 /**
  * Abstract Syntax Tree (AST).
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class AbstractSyntaxTree extends Digraph<ASNode, ASEdge> {
+public class AbstractSyntaxTree extends AbstractProgramGraph<ASNode, ASEdge> {
     
     public final String FILE_PATH;
     
@@ -42,50 +44,7 @@ public class AbstractSyntaxTree extends Digraph<ASNode, ASEdge> {
         FILE_PATH = ast.FILE_PATH;
     }
     
-	/**
-	 * Export this Abstract Syntax Tree (AST) to specified file format.
-	 */
-	public void export(String format, String outDir) throws FileNotFoundException {
-		switch (format.toLowerCase()) {
-			case "dot":
-				exportDOT(outDir);
-				break;
-			case "json":
-				exportJSON(outDir);
-				break;
-		}
-	}
-    
-	/**
-	 * Export this Abstract Syntax Tree (AST) to JSON format.
-	 * The JSON file will be saved in current working directory.
-	 */
-    public void exportJSON() throws FileNotFoundException {
-        exportJSON(System.getProperty("user.dir"));
-    }
-	
-	/**
-	 * Export this Abstract Syntax Tree (AST) to JSON format.
-	 * The JSON file will be saved inside the given directory path.
-	 */
-	public void exportJSON(String outDir) throws FileNotFoundException {
-        throw new UnsupportedOperationException("AST export to JSON not implemented yet!");
-    }
-    
-    /**
-     * Export this Abstract Syntax Tree (AST) to DOT format. 
-     * The DOT file will be saved in current working directory. 
-     * The DOT format is mainly aimed for visualization purposes.
-     */
-    public void exportDOT() throws FileNotFoundException {
-        exportDOT(System.getProperty("user.dir"));
-    }
-    
-    /**
-     * Export this Abstract Syntax Tree (AST) to DOT format. 
-     * The DOT file will be saved inside the given directory. 
-     * The DOT format is mainly aimed for visualization purposes.
-     */
+    @Override
     public void exportDOT(String outDir) throws FileNotFoundException {
         if (!outDir.endsWith(File.separator))
             outDir += File.separator;
@@ -118,5 +77,14 @@ public class AbstractSyntaxTree extends Digraph<ASNode, ASEdge> {
         }
 		Logger.info("AST exported to: " + filepath);
     }
-	
+
+    @Override
+    public void exportGML(String outDir) throws IOException {
+        throw new UnsupportedOperationException("AST export to GML not implemented yet!");
+    }
+    
+    @Override
+	public void exportJSON(String outDir) throws FileNotFoundException {
+        throw new UnsupportedOperationException("AST export to JSON not implemented yet!");
+    }
 }

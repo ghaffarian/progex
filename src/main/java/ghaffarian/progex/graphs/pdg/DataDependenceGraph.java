@@ -1,7 +1,7 @@
 /*** In The Name of Allah ***/
 package ghaffarian.progex.graphs.pdg;
 
-import ghaffarian.graphs.*;
+import ghaffarian.graphs.Edge;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -15,13 +15,15 @@ import ghaffarian.progex.graphs.cfg.CFNode;
 import ghaffarian.progex.graphs.cfg.ControlFlowGraph;
 import ghaffarian.progex.utils.StringUtils;
 import ghaffarian.nanologger.Logger;
+import ghaffarian.progex.graphs.AbstractProgramGraph;
+import java.io.IOException;
 
 /**
  * Data Dependence Graph.
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class DataDependenceGraph extends Digraph<PDNode, DDEdge> {
+public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
 	
 	public final String FILE_NAME;
 	private ControlFlowGraph cfg;
@@ -48,32 +50,74 @@ public class DataDependenceGraph extends Digraph<PDNode, DDEdge> {
 		}
 	}
 
-	/**
-	 * Export the Data Dependence Subgraph (DDG) of PDG to specified file format.
+    @Override
+    public void exportDOT(String outDir) throws IOException {
+        exportDOT(outDir, true);
+    }
+
+    /**
+	 * Export this Data Dependence Subgraph (DDG) of PDG to DOT file format.
+     * The 2nd parameter determines whether the attached CFG (if any) should also be exported.
+	 * The DOT file will be saved inside the given directory.
+	 * The DOT format is mainly aimed for visualization purposes.
 	 */
-	public void export(String format, String outDir) throws FileNotFoundException {
-		switch (format.toLowerCase()) {
-			case "dot":
-				exportDOT(outDir, true);
-				break;
-			case "json":
-				exportJSON(outDir);
-				break;
+    public void exportDOT(String outDir, boolean ctrlEdgeLabels) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
+		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filepath = outDir + filename + "-PDG-DATA.dot";
+		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
+			dot.println("digraph " + filename + "_PDG_DATA {");
+            dot.println("  // graph-vertices");
+			Map<CFNode, String> ctrlNodes = new HashMap<>();
+			Map<PDNode, String> dataNodes = new HashMap<>();
+			int nodeCounter = 1;
+            Enumeration<CFNode> cfNodes = cfg.enumerateAllVertices();
+			while (cfNodes.hasMoreElements()) {
+                CFNode node = cfNodes.nextElement();
+				String name = "v" + nodeCounter++;
+				ctrlNodes.put(node, name);
+				PDNode pdNode = (PDNode) node.getProperty("pdnode");
+				if (pdNode != null)
+					dataNodes.put(pdNode, name);
+				StringBuilder label = new StringBuilder("  [label=\"");
+				if (node.getLineOfCode() > 0)
+					label.append(node.getLineOfCode()).append(":  ");
+				label.append(StringUtils.escape(node.getCode())).append("\"];");
+				dot.println("  " + name + label.toString());
+			}
+			dot.println("  // graph-edges");
+            Enumeration<Edge<CFNode, CFEdge>> cfEdges = cfg.enumerateAllEdges();
+			while (cfEdges.hasMoreElements()) {
+                Edge<CFNode, CFEdge> ctrlEdge = cfEdges.nextElement();
+				String src = ctrlNodes.get(ctrlEdge.source);
+				String trg = ctrlNodes.get(ctrlEdge.target);
+				if (ctrlEdgeLabels)
+					dot.println("  " + src + " -> " + trg + 
+                                "  [arrowhead=empty, color=gray, style=dashed, label=\"" + ctrlEdge.label.type + "\"];");
+				else
+					dot.println("  " + src + " -> " + trg + "  [arrowhead=empty, color=gray, style=dashed];");
+			}
+			for (Edge<PDNode, DDEdge> dataEdge: allEdges) {
+				String src = dataNodes.get(dataEdge.source);
+				String trg = dataNodes.get(dataEdge.target);
+				dot.println("   " + src + " -> " + trg + "   [style=bold, label=\" (" + dataEdge.label.var + ")\"];");
+			}
+			dot.println("  // end-of-graph\n}");
+		} catch (UnsupportedEncodingException ex) {
+			Logger.error(ex);
 		}
+		Logger.info("DDS of PDG exported to: " + filepath);
 	}
 	
-	/**
-	 * Export the Data Dependence Subgraph (DDG) of PDG to JSON file format.
-	 * The JSON file will be saved in current working directory. 
-	 */
-	public void exportJSON() throws FileNotFoundException {
-        exportJSON(System.getProperty("user.dir"));
-    }    
-	
-	/**
-	 * Export the Data Dependence Subgraph (DDG) of PDG to JSON file format.
-	 * The JSON file will be saved inside the given directory.
-	 */
+    @Override
+    public void exportGML(String outDir) throws IOException {
+        throw new UnsupportedOperationException("DDG export to GML not implemented yet!");
+    }
+
+    @Override
 	public void exportJSON(String outDir) throws FileNotFoundException {
         if (!outDir.endsWith(File.separator))
             outDir += File.separator;
@@ -134,71 +178,6 @@ public class DataDependenceGraph extends Digraph<PDNode, DDEdge> {
 				json.println("    },");
 			}
 			json.println("  ]\n}");
-		} catch (UnsupportedEncodingException ex) {
-			Logger.error(ex);
-		}
-		Logger.info("DDS of PDG exported to: " + filepath);
-	}
-	
-	/**
-	 * Export the Data Dependence Subgraph (DDG) of PDG to DOT file format.
-	 * The DOT file will be saved in current working directory.
-	 * The DOT format is mainly aimed for visualization purposes.
-	 */
-	public void exportDOT() throws FileNotFoundException {
-        exportDOT(System.getProperty("user.dir"), false);
-    }
-    
-	/**
-	 * Export the Data Dependence Subgraph (DDG) of PDG to DOT file format.
-	 * The DOT file will be saved inside the given directory.
-	 * The DOT format is mainly aimed for visualization purposes.
-	 */
-	public void exportDOT(String outDir, boolean ctrlEdgeLabels) throws FileNotFoundException {
-        if (!outDir.endsWith(File.separator))
-            outDir += File.separator;
-        File outDirFile = new File(outDir);
-        outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
-		String filepath = outDir + filename + "-PDG-DATA.dot";
-		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + "_PDG_DATA {");
-            dot.println("  // graph-vertices");
-			Map<CFNode, String> ctrlNodes = new HashMap<>();
-			Map<PDNode, String> dataNodes = new HashMap<>();
-			int nodeCounter = 1;
-            Enumeration<CFNode> cfNodes = cfg.enumerateAllVertices();
-			while (cfNodes.hasMoreElements()) {
-                CFNode node = cfNodes.nextElement();
-				String name = "v" + nodeCounter++;
-				ctrlNodes.put(node, name);
-				PDNode pdNode = (PDNode) node.getProperty("pdnode");
-				if (pdNode != null)
-					dataNodes.put(pdNode, name);
-				StringBuilder label = new StringBuilder("  [label=\"");
-				if (node.getLineOfCode() > 0)
-					label.append(node.getLineOfCode()).append(":  ");
-				label.append(StringUtils.escape(node.getCode())).append("\"];");
-				dot.println("  " + name + label.toString());
-			}
-			dot.println("  // graph-edges");
-            Enumeration<Edge<CFNode, CFEdge>> cfEdges = cfg.enumerateAllEdges();
-			while (cfEdges.hasMoreElements()) {
-                Edge<CFNode, CFEdge> ctrlEdge = cfEdges.nextElement();
-				String src = ctrlNodes.get(ctrlEdge.source);
-				String trg = ctrlNodes.get(ctrlEdge.target);
-				if (ctrlEdgeLabels)
-					dot.println("  " + src + " -> " + trg + 
-                                "  [arrowhead=empty, color=gray, style=dashed, label=\"" + ctrlEdge.label.type + "\"];");
-				else
-					dot.println("  " + src + " -> " + trg + "  [arrowhead=empty, color=gray, style=dashed];");
-			}
-			for (Edge<PDNode, DDEdge> dataEdge: allEdges) {
-				String src = dataNodes.get(dataEdge.source);
-				String trg = dataNodes.get(dataEdge.target);
-				dot.println("   " + src + " -> " + trg + "   [style=bold, label=\" (" + dataEdge.label.var + ")\"];");
-			}
-			dot.println("  // end-of-graph\n}");
 		} catch (UnsupportedEncodingException ex) {
 			Logger.error(ex);
 		}

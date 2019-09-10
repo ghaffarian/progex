@@ -1,7 +1,7 @@
 /*** In The Name of Allah ***/
 package ghaffarian.progex.graphs.cfg;
 
-import ghaffarian.graphs.*;
+import ghaffarian.graphs.Edge;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -12,13 +12,15 @@ import java.util.List;
 import java.util.Map;
 import ghaffarian.progex.utils.StringUtils;
 import ghaffarian.nanologger.Logger;
+import ghaffarian.progex.graphs.AbstractProgramGraph;
+import java.io.IOException;
 
 /**
  * Control Flow Graph (CFG).
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class ControlFlowGraph extends Digraph<CFNode, CFEdge> {
+public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 	
 	private String pkgName;
 	public final String FILE_NAME;
@@ -47,32 +49,50 @@ public class ControlFlowGraph extends Digraph<CFNode, CFEdge> {
 		return methodEntries.toArray(new CFNode[methodEntries.size()]);
 	}
 	
-	/**
-	 * Export this Control Flow Graph (CFG) to specified file format.
-	 */
-	public void export(String format, String outDir) throws FileNotFoundException {
-		switch (format.toLowerCase()) {
-			case "dot":
-				exportDOT(outDir);
-				break;
-			case "json":
-				exportJSON(outDir);
-				break;
+    @Override
+	public void exportDOT(String outDir) throws FileNotFoundException {
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
+		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filepath = outDir + filename + "-CFG.dot";
+		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
+			dot.println("digraph " + filename + "_CFG {");
+            dot.println("  // graph-vertices");
+			Map<CFNode, String> nodeNames = new LinkedHashMap<>();
+			int nodeCounter = 1;
+			for (CFNode node: allVertices) {
+				String name = "v" + nodeCounter++;
+				nodeNames.put(node, name);
+				StringBuilder label = new StringBuilder("  [label=\"");
+				if (node.getLineOfCode() > 0)
+					label.append(node.getLineOfCode()).append(":  ");
+				label.append(StringUtils.escape(node.getCode())).append("\"];");
+				dot.println("  " + name + label.toString());
+			}
+			dot.println("  // graph-edges");
+			for (Edge<CFNode, CFEdge> edge: allEdges) {
+				String src = nodeNames.get(edge.source);
+				String trg = nodeNames.get(edge.target);
+				if (edge.label.type.equals(CFEdge.Type.EPSILON))
+					dot.println("  " + src + " -> " + trg + ";");
+				else
+					dot.println("  " + src + " -> " + trg + "  [label=\"" + edge.label.type + "\"];");
+			}
+			dot.println("  // end-of-graph\n}");
+		} catch (UnsupportedEncodingException ex) {
+			Logger.error(ex);
 		}
-	}
-    
-	/**
-	 * Export this Control Flow Graph (CFG) to JSON format.
-	 * The JSON file will be saved in current working directory. 
-	 */
-	public void exportJSON() throws FileNotFoundException {
-        exportJSON(System.getProperty("user.dir"));
-    }    
+		Logger.info("CFG exported to: " + filepath);
+	}	
+
+    @Override
+    public void exportGML(String outDir) throws IOException {
+        throw new UnsupportedOperationException("CFG export to GML not implemented yet!");
+    }
 	
-	/**
-	 * Export this Control Flow Graph (CFG) to JSON format.
-	 * The JSON file will be saved inside the given directory path.
-	 */
+    @Override
 	public void exportJSON(String outDir) throws FileNotFoundException {
         if (!outDir.endsWith(File.separator))
             outDir += File.separator;
@@ -114,55 +134,4 @@ public class ControlFlowGraph extends Digraph<CFNode, CFEdge> {
 		}
 		Logger.info("CFG exported to: " + filepath);
 	}
-	
-	/**
-	 * Export this Control Flow Graph (CFG) to DOT format.
-	 * The DOT file will be saved in current working directory.
-	 * The DOT format is mainly aimed for visualization purposes.
-	 */
-	public void exportDOT() throws FileNotFoundException {
-        exportDOT(System.getProperty("user.dir"));
-    }
-
-    /**
-	 * Export this Control Flow Graph (CFG) to DOT format.
-	 * The DOT file will be saved inside the given directory.
-	 * The DOT format is mainly aimed for visualization purposes.
-	 */
-	public void exportDOT(String outDir) throws FileNotFoundException {
-        if (!outDir.endsWith(File.separator))
-            outDir += File.separator;
-        File outDirFile = new File(outDir);
-        outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
-		String filepath = outDir + filename + "-CFG.dot";
-		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
-			dot.println("digraph " + filename + "_CFG {");
-            dot.println("  // graph-vertices");
-			Map<CFNode, String> nodeNames = new LinkedHashMap<>();
-			int nodeCounter = 1;
-			for (CFNode node: allVertices) {
-				String name = "v" + nodeCounter++;
-				nodeNames.put(node, name);
-				StringBuilder label = new StringBuilder("  [label=\"");
-				if (node.getLineOfCode() > 0)
-					label.append(node.getLineOfCode()).append(":  ");
-				label.append(StringUtils.escape(node.getCode())).append("\"];");
-				dot.println("  " + name + label.toString());
-			}
-			dot.println("  // graph-edges");
-			for (Edge<CFNode, CFEdge> edge: allEdges) {
-				String src = nodeNames.get(edge.source);
-				String trg = nodeNames.get(edge.target);
-				if (edge.label.type.equals(CFEdge.Type.EPSILON))
-					dot.println("  " + src + " -> " + trg + ";");
-				else
-					dot.println("  " + src + " -> " + trg + "  [label=\"" + edge.label.type + "\"];");
-			}
-			dot.println("  // end-of-graph\n}");
-		} catch (UnsupportedEncodingException ex) {
-			Logger.error(ex);
-		}
-		Logger.info("CFG exported to: " + filepath);
-	}	
 }
