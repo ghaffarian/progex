@@ -15,6 +15,9 @@ import ghaffarian.progex.graphs.pdg.ProgramDependeceGraph;
 import ghaffarian.progex.utils.FileUtils;
 import ghaffarian.progex.utils.SystemUtils;
 import ghaffarian.nanologger.Logger;
+import ghaffarian.progex.java.JavaClass;
+import ghaffarian.progex.java.JavaClassExtractor;
+import java.util.List;
 
 /**
  * A class which holds program execution options.
@@ -253,7 +256,7 @@ public class Execution {
 					Logger.info("=========================");
 					Logger.info("START: " + Logger.time() + '\n');
 					for (String srcFile : filePaths)
-						CodeInfoAnalyzer.analyzeInfo(lang.name, srcFile);
+						analyzeInfo(lang.name, srcFile);
 					break;
 				//
 				default:
@@ -265,5 +268,35 @@ public class Execution {
 		Logger.debug("\nMemory Status");
 		Logger.debug("=============");
 		Logger.debug(SystemUtils.getMemoryStats());
+	}
+    
+	private void analyzeInfo(String lang, String srcFilePath) {
+		switch (lang.toLowerCase()) {
+			case "c":
+				return;
+			//
+			case "java":
+				try {
+					Logger.info("\n========================================\n");
+					Logger.info("FILE: " + srcFilePath);
+					// first extract class info
+					List<JavaClass> classInfoList = JavaClassExtractor.extractInfo(srcFilePath);
+					for (JavaClass classInfo : classInfoList)
+						Logger.info("\n" + classInfo);
+					// then extract imports info
+					if (classInfoList.size() > 0) {
+						Logger.info("\n- - - - - - - - - - - - - - - - - - - - -");
+						String[] imports = classInfoList.get(0).IMPORTS;
+						for (JavaClass importInfo : JavaClassExtractor.extractImportsInfo(imports)) 
+							Logger.info("\n" + importInfo);
+					}
+				} catch (IOException ex) {
+					Logger.error(ex);
+				}
+				return;
+			//
+			case "python":
+				return;
+		}
 	}
 }
