@@ -3,6 +3,7 @@ package ghaffarian.progex.graphs;
 
 import ghaffarian.graphs.Digraph;
 import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Abstract Program Graph is the base class for all graphical program representations.
@@ -11,11 +12,14 @@ import java.io.IOException;
  */
 public abstract class AbstractProgramGraph<N, E> extends Digraph<N, E>  {
     
+    protected final Properties props; // TODO: compare Java's Properties vs Map<String, String>
+    
     /**
      * Default constructor.
      */
     public AbstractProgramGraph() {
         super();
+        props = new Properties();
     }
     
     /**
@@ -23,6 +27,7 @@ public abstract class AbstractProgramGraph<N, E> extends Digraph<N, E>  {
      */
     public AbstractProgramGraph(AbstractProgramGraph g) {
         super(g);
+        props = new Properties(g.props); // TODO: make sure this is a copy operation
     }
     
 	/**

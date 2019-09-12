@@ -24,7 +24,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 	
 	private String pkgName;
 	public final String FILE_NAME;
-	private List<CFNode> methodEntries;
+	private final List<CFNode> methodEntries;
 
 	public ControlFlowGraph(String name) {
 		super();
@@ -89,7 +89,48 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 
     @Override
     public void exportGML(String outDir) throws IOException {
-        throw new UnsupportedOperationException("CFG export to GML not implemented yet!");
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
+		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filepath = outDir + filename + "-CFG.gml";
+		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
+			gml.println("graph [");
+			gml.println("  directed 1");
+			gml.println("  comment " + FILE_NAME);
+			gml.println("  id " + props.getProperty("id"));       // FIXME: check if this property exists
+			gml.println("  label " + props.getProperty("label")); // FIXME: check if this property exists
+			gml.println("\n\n  \"nodes\": [");
+			Map<CFNode, String> nodeIDs = new LinkedHashMap<>();
+			int nodeCounter = 1;
+			for (CFNode node: allVertices) {
+				gml.println("    {");
+				String id = "n" + nodeCounter++;
+				nodeIDs.put(node, id);
+				gml.println("      \"id\": \"" + id + "\",");
+				gml.println("      \"line\": \"" + node.getLineOfCode() + "\",");
+				gml.println("      \"code\": \"" + node.getCode().replace("\"", "\\\"") + "\"");
+				gml.println("    },");
+			}
+			gml.println("  ],\n\n\n  \"edges\": [");
+			int edgeCounter = 1;
+			for (Edge<CFNode, CFEdge> edge: allEdges) {
+				gml.println("    {");
+				String id = "e" + edgeCounter++;
+				gml.println("      \"id\": \"" + id + "\",");
+				String src = nodeIDs.get(edge.source);
+				gml.println("      \"source\": \"" + src + "\",");
+				String trgt = nodeIDs.get(edge.target);
+				gml.println("      \"target\": \"" + trgt + "\",");
+				gml.println("      \"label\": \"" + edge.label.type + "\"");
+				gml.println("    },");
+			}
+			gml.println("  ]\n}");
+		} catch (UnsupportedEncodingException ex) {
+			Logger.error(ex);
+		}
+		Logger.info("CFG exported to: " + filepath);
     }
 	
     @Override
