@@ -93,8 +93,8 @@ public class JavaASTBuilder {
         
         public AbstractSyntaxTree build(ParseTree tree) {
             JavaParser.CompilationUnitContext rootCntx = (JavaParser.CompilationUnitContext) tree;
-            AST.ROOT.setCode(new File(AST.FILE_PATH).getName());
-            parentStack.push(AST.ROOT);
+            AST.root.setCode(new File(AST.filePath).getName());
+            parentStack.push(AST.root);
             if (rootCntx.packageDeclaration() != null)
                 visit(rootCntx.packageDeclaration());
             //
@@ -103,7 +103,7 @@ public class JavaASTBuilder {
                 imports.setLineOfCode(rootCntx.importDeclaration(0).getStart().getLine());
                 Logger.debug("Adding imports");
                 AST.addVertex(imports);
-                AST.addEdge(AST.ROOT, imports);
+                AST.addEdge(AST.root, imports);
                 parentStack.push(imports);
                 for (JavaParser.ImportDeclarationContext importCtx : rootCntx.importDeclaration())
                     visit(importCtx);
