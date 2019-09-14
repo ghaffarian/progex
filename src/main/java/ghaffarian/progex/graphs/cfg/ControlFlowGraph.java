@@ -99,8 +99,8 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 			gml.println("graph [");
 			gml.println("  directed 1");
 			gml.println("  comment " + FILE_NAME);
-			gml.println("  id " + props.getProperty("id"));       // FIXME: check if this property exists
-			gml.println("  label " + props.getProperty("label")); // FIXME: check if this property exists
+			gml.println("  id " + properties.getOrDefault("id", "N/A"));
+			gml.println("  label " + properties.getOrDefault("label", "N/A"));
 			gml.println("\n\n  \"nodes\": [");
 			Map<CFNode, String> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 1;
