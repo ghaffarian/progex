@@ -71,7 +71,7 @@ public class Execution {
 	 */
 	public enum Languages {
 		C		("C", ".c"),
-		JAVA	("Java", ".java"),
+		JAVA	    ("Java", ".java"),
 		PYTHON	("Python", ".py");
 		
 		private Languages(String str, String suffix) {
@@ -90,17 +90,7 @@ public class Execution {
 	 * Enumeration of different supported output formats.
 	 */
 	public enum Formats {
-		DOT		("DOT"),
-		JSON	("JSON");
-		
-		private Formats(String str) {
-			name = str;
-		}
-		@Override
-		public String toString() {
-			return name;
-		}
-		public final String name;
+		DOT, GML, JSON
 	}
 	
 	
@@ -179,7 +169,7 @@ public class Execution {
 		
 		// Check language
 		if (!lang.equals(Languages.JAVA)) {
-			Logger.info("Analysis of " + lang.name + " programs is not yet implemented!");
+			Logger.info("Analysis of " + lang.name + " programs is not yet supported!");
 			Logger.info("Abort.");
 			System.exit(0);
 		}
@@ -196,11 +186,11 @@ public class Execution {
 				case "AST":
 					Logger.info("\nAbstract Syntax Analysis");
 					Logger.info("========================");
-					Logger.info("START: " + Logger.time() + '\n');
+					Logger.debug("START: " + Logger.time() + '\n');
 					for (String srcFile : filePaths) {
 						try {
                             AbstractSyntaxTree ast = ASTBuilder.build(lang.name, srcFile);
-							ast.export(format.name, outputDir);
+							ast.export(format.toString(), outputDir);
 						} catch (IOException ex) {
 							Logger.error(ex);
 						}
@@ -210,11 +200,11 @@ public class Execution {
 				case "CFG":
 					Logger.info("\nControl-Flow Analysis");
 					Logger.info("=====================");
-					Logger.info("START: " + Logger.time() + '\n');
+					Logger.debug("START: " + Logger.time() + '\n');
 					for (String srcFile : filePaths) {
 						try {
 							ControlFlowGraph cfg = CFGBuilder.build(lang.name, srcFile);
-							cfg.export(format.name, outputDir);
+							cfg.export(format.toString(), outputDir);
 						} catch (IOException ex) {
 							Logger.error(ex);
 						}
@@ -224,10 +214,10 @@ public class Execution {
 				case "ICFG":
 					Logger.info("\nInterprocedural Control-Flow Analysis");
 					Logger.info("=====================================");
-					Logger.info("START: " + Logger.time() + '\n');
+					Logger.debug("START: " + Logger.time() + '\n');
 					try {
 						ControlFlowGraph icfg = ICFGBuilder.buildForAll(lang.name, filePaths);
-						icfg.export(format.name, outputDir);
+						icfg.export(format.toString(), outputDir);
 					} catch (IOException ex) {
 						Logger.error(ex);
 					}
@@ -236,13 +226,13 @@ public class Execution {
 				case "PDG":
 					Logger.info("\nProgram-Dependence Analysis");
 					Logger.info("===========================");
-					Logger.info("START: " + Logger.time() + '\n');
+					Logger.debug("START: " + Logger.time() + '\n');
 					try {
 						for (ProgramDependeceGraph pdg: PDGBuilder.buildForAll(lang.name, filePaths)) {
-							pdg.CDS.export(format.name, outputDir);
-							pdg.DDS.export(format.name, outputDir);
+							pdg.CDS.export(format.toString(), outputDir);
+							pdg.DDS.export(format.toString(), outputDir);
                             if (debugMode) {
-                                pdg.DDS.getCFG().export(format.name, outputDir);
+                                pdg.DDS.getCFG().export(format.toString(), outputDir);
                                 pdg.DDS.printAllNodesUseDefs(Logger.Level.DEBUG);
                             }
 						}
@@ -254,15 +244,15 @@ public class Execution {
 				case "INFO":
 					Logger.info("\nCode Information Analysis");
 					Logger.info("=========================");
-					Logger.info("START: " + Logger.time() + '\n');
+					Logger.debug("START: " + Logger.time() + '\n');
 					for (String srcFile : filePaths)
 						analyzeInfo(lang.name, srcFile);
 					break;
 				//
 				default:
-					Logger.info("\n\'" + analysis.type + "\' analysis is not yet implemented!\n");
+					Logger.info("\n\'" + analysis.type + "\' analysis is not supported!\n");
 			}
-			Logger.info("\nFINISH: " + Logger.time());
+			Logger.debug("\nFINISH: " + Logger.time());
 		}
 		//
 		Logger.debug("\nMemory Status");

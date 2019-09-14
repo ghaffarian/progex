@@ -13,7 +13,6 @@ import ghaffarian.nanologger.Logger;
  */
 public class CLI {
 	
-    private boolean debugMode;
 	private final Execution exec;
 	
 	public CLI() {
@@ -33,16 +32,16 @@ public class CLI {
 						opt = args[i].substring(2).toLowerCase();
 					// Now process the value of opt
 					switch (opt) {
+						case "ast":
+							exec.addAnalysisOption(Execution.Analysis.AST);
+							break;
+						//
 						case "cfg":
 							exec.addAnalysisOption(Execution.Analysis.CFG);
 							break;
 						//
 						case "pdg":
 							exec.addAnalysisOption(Execution.Analysis.PDG);
-							break;
-						//
-						case "ast":
-							exec.addAnalysisOption(Execution.Analysis.AST);
 							break;
 						//
 						case "icfg":
@@ -76,6 +75,9 @@ public class CLI {
 								switch (args[i].toLowerCase()) {
 									case "dot":
 										exec.setOutputFormat(Execution.Formats.DOT);
+										break;
+									case "gml":
+										exec.setOutputFormat(Execution.Formats.GML);
 										break;
 									case "json":
 										exec.setOutputFormat(Execution.Formats.JSON);
@@ -154,7 +156,7 @@ public class CLI {
 			"OPTIONS:\n",
 			"   -help      Print this help message",
 			"   -outdir    Specify path of output directory",
-			"   -format    Specify output format; either 'JSON' or 'DOT'",
+			"   -format    Specify output format; either 'DOT', 'GML', or 'JSON'",
 			"   -lang      Specify language of program source codes\n",
 			"   -ast       Perform AST (Abstract Syntax Tree) analysis",
 			"   -cfg       Perfomt CFG (Control Flow Graph) analysis",
@@ -170,12 +172,12 @@ public class CLI {
 			"   - There is no default value for analysis type.",
 			"   - There is no default value for input directory path.\n",
 			"EXAMPLES:\n",
-			"   java -jar PROGEX.jar -cfg -lang java -format dot  /home/user/project/src\n",
+			"   java -jar PROGEX.jar -cfg -lang java -format gml  /home/user/project/src\n",
 			"      This example will extract the CFG of all Java source files in the given path and ",
-			"      will export all extracted graphs as DOT files in the current working directory.\n",
-			"   java -jar PROGEX.jar -outdir D:\\outputs -format json -pdg  C:\\Project\\src\n",
+			"      will export all extracted graphs as GML files in the current working directory.\n",
+			"   java -jar PROGEX.jar -outdir D:\\outputs -pdg  C:\\Project\\src\n",
 			"      This example will extract the PDGs of all Java source files in the given path and ",
-			"      will export all extracted graphs as JSON files in the given output directory.\n",
+			"      will export all extracted graphs as DOT files in the given output directory.\n",
 			"NOTES:\n",
 			"   - The important pre-assumption for analyzing any source code is that the ",
 			"     program is valid according to the grammar of that language. Analyzing ",

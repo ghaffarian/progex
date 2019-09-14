@@ -38,19 +38,18 @@ public abstract class AbstractProgramGraph<N, E> extends Digraph<N, E>  {
      * The file will be saved in the given directory path.
 	 */
 	public void export(String format, String outDir) throws IOException {
-		switch (format.toLowerCase()) {
-            
-			case "dot":
-				exportDOT(outDir);
-				break;
-                
-			case "gml":
-				exportGML(outDir);
-				break;
-                
-			case "json":
+		switch (format) {
+            case "DOT":
+                exportDOT(outDir);
+                break;
+
+            case "GML":
+                exportGML(outDir);
+                break;
+
+            case "JSON":
 				exportJSON(outDir);
-				break;
+             			break;
 		}
 	}
     
