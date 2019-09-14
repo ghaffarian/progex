@@ -14,6 +14,7 @@ import ghaffarian.progex.utils.StringUtils;
 import ghaffarian.nanologger.Logger;
 import ghaffarian.progex.graphs.AbstractProgramGraph;
 import java.io.IOException;
+import java.util.Map.Entry;
 
 /**
  * Control Flow Graph (CFG).
@@ -98,35 +99,40 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
 			gml.println("graph [");
 			gml.println("  directed 1");
-			gml.println("  comment " + FILE_NAME);
-			gml.println("  id " + properties.getOrDefault("id", "N/A"));
-			gml.println("  label " + properties.getOrDefault("label", "N/A"));
-			gml.println("\n\n  \"nodes\": [");
-			Map<CFNode, String> nodeIDs = new LinkedHashMap<>();
+			gml.println("  label \"CFG of " + FILE_NAME + "\"");
+			for (Entry<String, String> property: properties.entrySet()) {
+                switch (property.getKey()) {
+                    case "directed":
+                    case "label":
+                        continue;
+                    default:
+                        gml.println("  " + property.getKey() + " \"" + property.getValue() + "\"");
+                }
+            }
+			Map<CFNode, Integer> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 1;
 			for (CFNode node: allVertices) {
-				gml.println("    {");
-				String id = "n" + nodeCounter++;
-				nodeIDs.put(node, id);
-				gml.println("      \"id\": \"" + id + "\",");
-				gml.println("      \"line\": \"" + node.getLineOfCode() + "\",");
-				gml.println("      \"code\": \"" + node.getCode().replace("\"", "\\\"") + "\"");
-				gml.println("    },");
+				gml.println("    node [");
+				nodeIDs.put(node, nodeCounter);
+				gml.println("      id " + nodeCounter);
+				gml.println("      line " + node.getLineOfCode());
+                String code = StringUtils.escape(node.getCode());
+				gml.println("      label \"" + code + "\"");
+				gml.println("      code \""  + code + "\"");
+				gml.println("    ]");
+				nodeCounter++;
 			}
-			gml.println("  ],\n\n\n  \"edges\": [");
 			int edgeCounter = 1;
 			for (Edge<CFNode, CFEdge> edge: allEdges) {
-				gml.println("    {");
-				String id = "e" + edgeCounter++;
-				gml.println("      \"id\": \"" + id + "\",");
-				String src = nodeIDs.get(edge.source);
-				gml.println("      \"source\": \"" + src + "\",");
-				String trgt = nodeIDs.get(edge.target);
-				gml.println("      \"target\": \"" + trgt + "\",");
-				gml.println("      \"label\": \"" + edge.label.type + "\"");
-				gml.println("    },");
+				gml.println("    edge [");
+				gml.println("      id " + edgeCounter);
+				gml.println("      source " + nodeIDs.get(edge.source));
+				gml.println("      target " + nodeIDs.get(edge.target));
+				gml.println("      label \"" + edge.label.type + "\"");
+				gml.println("    ]");
+				edgeCounter++;
 			}
-			gml.println("  ]\n}");
+			gml.println("]");
 		} catch (UnsupportedEncodingException ex) {
 			Logger.error(ex);
 		}
