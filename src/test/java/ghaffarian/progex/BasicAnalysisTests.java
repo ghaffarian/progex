@@ -77,16 +77,16 @@ public class BasicAnalysisTests {
         assertEquals(testFiles.length, outCtrlFiles.length);
     }
     
-//    @Test
-//    public void javaASTreeGmlTest() {
-//        String outDir = OUTPUT_DIR + "AST/";
-//        String[] args = {"-ast", "-outdir", outDir, "-format", "gml", JAVA_SRC_DIR};
-//        Main.main(args);
-//        //
-//        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
-//        String[] outFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-AST.gml");
-//        assertEquals(testFiles.length, outFiles.length);
-//    }
+    @Test
+    public void javaASTreeGmlTest() {
+        String outDir = OUTPUT_DIR + "AST/";
+        String[] args = {"-ast", "-outdir", outDir, "-format", "gml", JAVA_SRC_DIR};
+        Main.main(args);
+        //
+        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
+        String[] outFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-AST.gml");
+        assertEquals(testFiles.length, outFiles.length);
+    }
     
     @Test
     public void javaCFGGmlTest() {
