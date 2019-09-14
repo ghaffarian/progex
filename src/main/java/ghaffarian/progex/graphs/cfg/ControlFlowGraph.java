@@ -151,7 +151,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 		String filename = fileName.substring(0, fileName.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.json";
 		try (PrintWriter json = new PrintWriter(filepath, "UTF-8")) {
-			json.println("{\n  \"directed\": \"true\",");
+			json.println("{\n  \"directed\": true,");
 			for (Entry<String, String> property: properties.entrySet()) {
                 switch (property.getKey()) {
                     case "directed":
@@ -169,7 +169,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 			for (CFNode node: allVertices) {
 				json.println("    {");
 				json.println("      \"id\": \"" + nodeCounter + "\",");
-				json.println("      \"line\": \"" + node.getLineOfCode() + "\",");
+				json.println("      \"line\": " + node.getLineOfCode() + ",");
 				json.println("      \"label\": \"" + StringUtils.escape(node.getCode()) + "\"");
 				json.println("    },");
 				nodeIDs.put(node, nodeCounter);
@@ -180,9 +180,9 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 			int edgeCounter = 0;
 			for (Edge<CFNode, CFEdge> edge: allEdges) {
 				json.println("    {");
-				json.println("      \"id\": \"" + edgeCounter + "\",");
-				json.println("      \"source\": \"" + nodeIDs.get(edge.source) + "\",");
-				json.println("      \"target\": \"" + nodeIDs.get(edge.target) + "\",");
+				json.println("      \"id\": " + edgeCounter + ",");
+				json.println("      \"source\": " + nodeIDs.get(edge.source) + ",");
+				json.println("      \"target\": " + nodeIDs.get(edge.target) + ",");
 				json.println("      \"label\": \"" + edge.label.type + "\"");
 				json.println("    },");
 				++edgeCounter;
