@@ -24,14 +24,16 @@ import java.util.Map.Entry;
 public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 	
 	private String pkgName;
-	public final String FILE_NAME;
+	public final String fileName;
 	private final List<CFNode> methodEntries;
 
 	public ControlFlowGraph(String name) {
 		super();
-		pkgName = "";
-		this.FILE_NAME = name;
+		this.pkgName = "";
+		this.fileName = name;
 		methodEntries = new ArrayList<>();
+        properties.put("label", "CFG of " + fileName);
+        properties.put("type", "Control Flow Graph (CFG)");
 	}
 	
 	public void setPackage(String pkg) {
@@ -56,7 +58,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
             outDir += File.separator;
         File outDirFile = new File(outDir);
         outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filename = fileName.substring(0, fileName.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
 			dot.println("digraph " + filename + "_CFG {");
@@ -94,43 +96,44 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
             outDir += File.separator;
         File outDirFile = new File(outDir);
         outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filename = fileName.substring(0, fileName.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.gml";
 		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
 			gml.println("graph [");
 			gml.println("  directed 1");
-            String label = "CFG of " + FILE_NAME + "\"";
 			for (Entry<String, String> property: properties.entrySet()) {
                 switch (property.getKey()) {
                     case "directed":
                         continue;
-                    case "label":
-                        label = property.getValue();
                     default:
                         gml.println("  " + property.getKey() + " \"" + property.getValue() + "\"");
                 }
             }
-			gml.println("  label \"" + label + "\"");
+            gml.println("  file \"" + this.fileName + "\"");
+            gml.println("  package \"" + this.pkgName + "\"\n");
+            //
 			Map<CFNode, Integer> nodeIDs = new LinkedHashMap<>();
-			int nodeCounter = 1;
+			int nodeCounter = 0;
 			for (CFNode node: allVertices) {
-				gml.println("    node [");
-				gml.println("      id " + nodeCounter);
-				gml.println("      line " + node.getLineOfCode());
-				gml.println("      label \"" + StringUtils.escape(node.getCode()) + "\"");
-				gml.println("    ]");
+				gml.println("  node [");
+				gml.println("    id " + nodeCounter);
+				gml.println("    line " + node.getLineOfCode());
+				gml.println("    label \"" + StringUtils.escape(node.getCode()) + "\"");
+				gml.println("  ]");
 				nodeIDs.put(node, nodeCounter);
-				nodeCounter++;
+				++nodeCounter;
 			}
-			int edgeCounter = 1;
+            gml.println();
+            //
+			int edgeCounter = 0;
 			for (Edge<CFNode, CFEdge> edge: allEdges) {
-				gml.println("    edge [");
-				gml.println("      id " + edgeCounter);
-				gml.println("      source " + nodeIDs.get(edge.source));
-				gml.println("      target " + nodeIDs.get(edge.target));
-				gml.println("      label \"" + edge.label.type + "\"");
-				gml.println("    ]");
-				edgeCounter++;
+				gml.println("  edge [");
+				gml.println("    id " + edgeCounter);
+				gml.println("    source " + nodeIDs.get(edge.source));
+				gml.println("    target " + nodeIDs.get(edge.target));
+				gml.println("    label \"" + edge.label.type + "\"");
+				gml.println("  ]");
+				++edgeCounter;
 			}
 			gml.println("]");
 		} catch (UnsupportedEncodingException ex) {
@@ -145,35 +148,44 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
             outDir += File.separator;
         File outDirFile = new File(outDir);
         outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filename = fileName.substring(0, fileName.indexOf('.'));
 		String filepath = outDir + filename + "-CFG.json";
 		try (PrintWriter json = new PrintWriter(filepath, "UTF-8")) {
-			json.println("{\n  \"type\": \"CFG\",");
-			json.println("  \"file\": \"" + FILE_NAME + "\",");
-			json.println("\n\n  \"nodes\": [");
-			Map<CFNode, String> nodeIDs = new LinkedHashMap<>();
-			int nodeCounter = 1;
+			json.println("{\n  \"directed\": \"true\",");
+			for (Entry<String, String> property: properties.entrySet()) {
+                switch (property.getKey()) {
+                    case "directed":
+                        continue;
+                    default:
+                        json.println("  \"" + property.getKey() + "\": \"" + property.getValue() + "\",");
+                }
+            }
+			json.println("  \"file\": \"" + fileName + "\",");
+            json.println("  \"package\": \"" + this.pkgName + "\",\n");
+			json.println("  \"nodes\": [");
+            //
+			Map<CFNode, Integer> nodeIDs = new LinkedHashMap<>();
+			int nodeCounter = 0;
 			for (CFNode node: allVertices) {
 				json.println("    {");
-				String id = "n" + nodeCounter++;
-				nodeIDs.put(node, id);
-				json.println("      \"id\": \"" + id + "\",");
+				json.println("      \"id\": \"" + nodeCounter + "\",");
 				json.println("      \"line\": \"" + node.getLineOfCode() + "\",");
-				json.println("      \"code\": \"" + node.getCode().replace("\"", "\\\"") + "\"");
+				json.println("      \"label\": \"" + StringUtils.escape(node.getCode()) + "\"");
 				json.println("    },");
+				nodeIDs.put(node, nodeCounter);
+				++nodeCounter;
 			}
-			json.println("  ],\n\n\n  \"edges\": [");
-			int edgeCounter = 1;
+            //
+			json.println("  ],\n\n  \"edges\": [");
+			int edgeCounter = 0;
 			for (Edge<CFNode, CFEdge> edge: allEdges) {
 				json.println("    {");
-				String id = "e" + edgeCounter++;
-				json.println("      \"id\": \"" + id + "\",");
-				String src = nodeIDs.get(edge.source);
-				json.println("      \"source\": \"" + src + "\",");
-				String trgt = nodeIDs.get(edge.target);
-				json.println("      \"target\": \"" + trgt + "\",");
+				json.println("      \"id\": \"" + edgeCounter + "\",");
+				json.println("      \"source\": \"" + nodeIDs.get(edge.source) + "\",");
+				json.println("      \"target\": \"" + nodeIDs.get(edge.target) + "\",");
 				json.println("      \"label\": \"" + edge.label.type + "\"");
 				json.println("    },");
+				++edgeCounter;
 			}
 			json.println("  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
