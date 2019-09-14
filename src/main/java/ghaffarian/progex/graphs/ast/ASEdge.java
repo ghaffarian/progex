@@ -8,4 +8,9 @@ package ghaffarian.progex.graphs.ast;
  */
 public class ASEdge {
     
+    @Override
+    public String toString() {
+        return "";
+    }
+    
 }
