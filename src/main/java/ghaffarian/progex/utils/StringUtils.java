@@ -19,6 +19,8 @@ public class StringUtils {
 	 * A simple escaping method based on REGEX.
 	 */
 	public static String escape(String code) {
+        if (code == null)
+            return null;
 		// Match and replace all string literals
 		//String escapedCode = code.replaceAll("\".*?\"", "STR");
 		String escapedCode = code.replaceAll("\"", "'");
@@ -33,7 +35,7 @@ public class StringUtils {
 	 * Returns a string which replaces all double-quotes (") chars with the escaped version (\").
 	 */
 	public static String escapeDoubleQuotes(String code) {
-		return code.replace("\"", "\\\"");
+		return (code == null) ? null : code.replace("\"", "\\\"");
 	}
 	
 	/**
