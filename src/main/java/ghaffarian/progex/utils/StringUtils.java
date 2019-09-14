@@ -7,6 +7,13 @@ package ghaffarian.progex.utils;
  * @author Seyed Mohammad Ghaffarian
  */
 public class StringUtils {
+    
+    /**
+     * Returns true if given String is null or empty after trim.
+     */
+    public static boolean isEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
 	
 	/**
 	 * A simple escaping method based on REGEX.
