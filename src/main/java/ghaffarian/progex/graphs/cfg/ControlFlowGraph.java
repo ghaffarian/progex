@@ -99,27 +99,27 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
 			gml.println("graph [");
 			gml.println("  directed 1");
-			gml.println("  label \"CFG of " + FILE_NAME + "\"");
+            String label = "CFG of " + FILE_NAME + "\"";
 			for (Entry<String, String> property: properties.entrySet()) {
                 switch (property.getKey()) {
                     case "directed":
-                    case "label":
                         continue;
+                    case "label":
+                        label = property.getValue();
                     default:
                         gml.println("  " + property.getKey() + " \"" + property.getValue() + "\"");
                 }
             }
+			gml.println("  label \"" + label + "\"");
 			Map<CFNode, Integer> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 1;
 			for (CFNode node: allVertices) {
 				gml.println("    node [");
-				nodeIDs.put(node, nodeCounter);
 				gml.println("      id " + nodeCounter);
 				gml.println("      line " + node.getLineOfCode());
-                String code = StringUtils.escape(node.getCode());
-				gml.println("      label \"" + code + "\"");
-				gml.println("      code \""  + code + "\"");
+				gml.println("      label \"" + StringUtils.escape(node.getCode()) + "\"");
 				gml.println("    ]");
+				nodeIDs.put(node, nodeCounter);
 				nodeCounter++;
 			}
 			int edgeCounter = 1;
