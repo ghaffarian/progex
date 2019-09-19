@@ -101,6 +101,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
 			gml.println("graph [");
 			gml.println("  directed 1");
+			gml.println("  multigraph 1");
 			for (Entry<String, String> property: properties.entrySet()) {
                 switch (property.getKey()) {
                     case "directed":
