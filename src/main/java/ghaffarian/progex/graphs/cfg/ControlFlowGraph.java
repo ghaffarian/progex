@@ -169,7 +169,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 			int nodeCounter = 0;
 			for (CFNode node: allVertices) {
 				json.println("    {");
-				json.println("      \"id\": \"" + nodeCounter + "\",");
+				json.println("      \"id\": " + nodeCounter + ",");
 				json.println("      \"line\": " + node.getLineOfCode() + ",");
 				json.println("      \"label\": \"" + StringUtils.escape(node.getCode()) + "\"");
 				json.println("    },");
