@@ -162,8 +162,9 @@ public class AbstractSyntaxTree extends AbstractProgramGraph<ASNode, ASEdge> {
             //
 			Map<ASNode, Integer> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 0;
+            String firstLine = "    {";
 			for (ASNode node: allVertices) {
-				json.println("    {");
+				json.println(firstLine);
 				json.println("      \"id\": " + nodeCounter + ",");
 				json.println("      \"line\": " + node.getLineOfCode() + ",");
 				json.println("      \"type\": \"" + node.getType() + "\",");
@@ -173,15 +174,17 @@ public class AbstractSyntaxTree extends AbstractProgramGraph<ASNode, ASEdge> {
                 String normalized = node.getNormalizedCode();
                 normalized = StringUtils.isEmpty(normalized) ? code : StringUtils.escape(normalized);
 				json.println("      \"normalized\": \"" + normalized + "\"");
-				json.println("    },");
+				json.print("    }");
 				nodeIDs.put(node, nodeCounter);
 				++nodeCounter;
+                firstLine = ",\n    {";
 			}
             //
-			json.println("  ],\n\n  \"edges\": [");
+			json.println("\n  ],\n\n  \"edges\": [");
 			int edgeCounter = 0;
+            firstLine = "    {";
 			for (Edge<ASNode, ASEdge> edge: allEdges) {
-				json.println("    {");
+				json.println(firstLine);
 				json.println("      \"id\": " + edgeCounter + ",");
 				json.println("      \"source\": " + nodeIDs.get(edge.source) + ",");
 				json.println("      \"target\": " + nodeIDs.get(edge.target) + ",");
@@ -189,10 +192,11 @@ public class AbstractSyntaxTree extends AbstractProgramGraph<ASNode, ASEdge> {
                 // Java-AST-Builder uses Digraph::addEdge(V, V) which is addEdge(new Edge(V, null, V))!
                 // Using a null edge label can have its use-cases, but in this case we need something like
                 // Digraph::addDefaultEdge(V, V) which is addEdge(V, new E(), V) using a default constructor.
-				json.println("    },");
+				json.print("    }");
 				++edgeCounter;
+                firstLine = ",\n    {";
 			}
-			json.println("  ]\n}");
+			json.println("\n  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
 			Logger.error(ex);
 		}
