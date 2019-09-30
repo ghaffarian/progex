@@ -167,32 +167,34 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
             //
 			Map<CFNode, Integer> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 0;
-            String firstLine = "    {";
 			for (CFNode node: allVertices) {
-                json.println(firstLine);
+                json.println("    {");
 				json.println("      \"id\": " + nodeCounter + ",");
 				json.println("      \"line\": " + node.getLineOfCode() + ",");
 				json.println("      \"label\": \"" + StringUtils.escape(node.getCode()) + "\"");
-				json.print("    }");
 				nodeIDs.put(node, nodeCounter);
 				++nodeCounter;
-                firstLine = ",\n    {";
+                if (nodeCounter == allVertices.size())
+                    json.println("    }");
+                else
+                    json.println("    },");
 			}
             //
-			json.println("\n  ],\n\n  \"edges\": [");
+			json.println("  ],\n\n  \"edges\": [");
 			int edgeCounter = 0;
-            firstLine = "    {";
 			for (Edge<CFNode, CFEdge> edge: allEdges) {
-				json.println(firstLine);
+				json.println("    {");
 				json.println("      \"id\": " + edgeCounter + ",");
 				json.println("      \"source\": " + nodeIDs.get(edge.source) + ",");
 				json.println("      \"target\": " + nodeIDs.get(edge.target) + ",");
 				json.println("      \"label\": \"" + edge.label.type + "\"");
-				json.print("    }");
 				++edgeCounter;
-                firstLine = ",\n    {";
+                if (edgeCounter == allEdges.size())
+                    json.println("    }");
+                else
+                    json.println("    },");
 			}
-			json.println("\n  ]\n}");
+			json.println("  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
 			Logger.error(ex);
 		}
