@@ -27,10 +27,10 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 	public final String fileName;
 	private final List<CFNode> methodEntries;
 
-	public ControlFlowGraph(String name) {
+	public ControlFlowGraph(String fileName) {
 		super();
 		this.pkgName = "";
-		this.fileName = name;
+		this.fileName = fileName;
 		methodEntries = new ArrayList<>();
         properties.put("label", "CFG of " + fileName);
         properties.put("type", "Control Flow Graph (CFG)");
@@ -163,8 +163,8 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
             }
 			json.println("  \"file\": \"" + fileName + "\",");
             json.println("  \"package\": \"" + this.pkgName + "\",\n");
-			json.println("  \"nodes\": [");
             //
+			json.println("  \"nodes\": [");
 			Map<CFNode, Integer> nodeIDs = new LinkedHashMap<>();
 			int nodeCounter = 0;
 			for (CFNode node: allVertices) {
