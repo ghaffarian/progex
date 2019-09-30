@@ -12,6 +12,7 @@ import ghaffarian.progex.utils.StringUtils;
 import ghaffarian.nanologger.Logger;
 import ghaffarian.progex.graphs.AbstractProgramGraph;
 import java.io.IOException;
+import java.util.Map.Entry;
 
 /**
  * Control Dependence Graph.
@@ -20,11 +21,13 @@ import java.io.IOException;
  */
 public class ControlDependenceGraph extends AbstractProgramGraph<PDNode, CDEdge> {
 	
-	public final String FILE_NAME;
+	public final String fileName;
 	
-	public ControlDependenceGraph(String javaFileName) {
+	public ControlDependenceGraph(String fileName) {
 		super();
-		FILE_NAME = javaFileName;
+		this.fileName = fileName;
+        properties.put("label", "CDG of " + fileName);
+        properties.put("type", "Control Dependence Graph (CDG)");
 	}
 	
     @Override
@@ -33,7 +36,7 @@ public class ControlDependenceGraph extends AbstractProgramGraph<PDNode, CDEdge>
             outDir += File.separator;
         File outDirFile = new File(outDir);
         outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filename = fileName.substring(0, fileName.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-CTRL.dot";
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
 			dot.println("digraph " + filename + "_PDG_CTRL {");
@@ -76,35 +79,49 @@ public class ControlDependenceGraph extends AbstractProgramGraph<PDNode, CDEdge>
             outDir += File.separator;
         File outDirFile = new File(outDir);
         outDirFile.mkdirs();
-		String filename = FILE_NAME.substring(0, FILE_NAME.indexOf('.'));
+		String filename = fileName.substring(0, fileName.indexOf('.'));
 		String filepath = outDir + filename + "-PDG-CTRL.json";
 		try (PrintWriter json = new PrintWriter(filepath, "UTF-8")) {
-			json.println("{\n  \"type\": \"PDG-CTRL\",");
-			json.println("  \"file\": \"" + FILE_NAME + "\",");
-			json.println("\n\n  \"nodes\": [");
-			Map<PDNode, String> nodeIDs = new LinkedHashMap<>();
-			int nodeCounter = 1;
+			json.println("{\n  \"directed\": true,");
+			for (Entry<String, String> property: properties.entrySet()) {
+                switch (property.getKey()) {
+                    case "directed":
+                        continue;
+                    default:
+                        json.println("  \"" + property.getKey() + "\": \"" + property.getValue() + "\",");
+                }
+            }
+			json.println("  \"file\": \"" + fileName + "\",\n");
+            //
+			json.println("  \"nodes\": [");
+			Map<PDNode, Integer> nodeIDs = new LinkedHashMap<>();
+			int nodeCounter = 0;
 			for (PDNode node: allVertices) {
 				json.println("    {");
-				String id = "n" + nodeCounter++;
-				nodeIDs.put(node, id);
-				json.println("      \"id\": \"" + id + "\",");
-				json.println("      \"line\": \"" + node.getLineOfCode() + "\",");
-				json.println("      \"code\": \"" + node.getCode().replace("\"", "\\\"") + "\"");
-				json.println("    },");
+				json.println("      \"id\": " + nodeCounter + ",");
+				json.println("      \"line\": " + node.getLineOfCode() + ",");
+				json.println("      \"label\": \"" + StringUtils.escape(node.getCode()) + "\"");
+				nodeIDs.put(node, nodeCounter);
+				++nodeCounter;
+                if (nodeCounter == allVertices.size())
+                    json.println("    }");
+                else
+                    json.println("    },");
 			}
-			json.println("  ],\n\n\n  \"edges\": [");
-			int edgeCounter = 1;
+            //
+			json.println("  ],\n\n  \"edges\": [");
+			int edgeCounter = 0;
 			for (Edge<PDNode, CDEdge> edge: allEdges) {
 				json.println("    {");
-				String id = "e" + edgeCounter++;
-				json.println("      \"id\": \"" + id + "\",");
-				String src = nodeIDs.get(edge.source);
-				json.println("      \"source\": \"" + src + "\",");
-				String trgt = nodeIDs.get(edge.target);
-				json.println("      \"target\": \"" + trgt + "\",");
+				json.println("      \"id\": " + edgeCounter + ",");
+				json.println("      \"source\": " + nodeIDs.get(edge.source) + ",");
+				json.println("      \"target\": " + nodeIDs.get(edge.target) + ",");
 				json.println("      \"label\": \"" + edge.label.type + "\"");
-				json.println("    },");
+				++edgeCounter;
+                if (edgeCounter == allEdges.size())
+                    json.println("    }");
+                else
+                    json.println("    },");
 			}
 			json.println("  ]\n}");
 		} catch (UnsupportedEncodingException ex) {
