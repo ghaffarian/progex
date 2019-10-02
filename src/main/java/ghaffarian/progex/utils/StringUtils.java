@@ -58,4 +58,25 @@ public class StringUtils {
             json.append(", ");
         }
 	}
+	
+	/**
+	 * Returns a GML array representation of the given String array.
+     * 
+     * @param name given name for elements of this array
+	 */
+	public static String toGmlArray(String[] strArray, String name) {
+        if (strArray == null)
+            return "null";
+        int max = strArray.length - 1;
+        if (max == -1)
+            return "[]";
+        StringBuilder gml = new StringBuilder();
+        gml.append('[');
+        for (int i = 0; ; ++i) {
+            gml.append(name).append(" \"").append(strArray[i]).append('\"');
+            if (i == max)
+                return gml.append(']').toString();
+            gml.append(' ');
+        }
+	}
 }

@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import ghaffarian.progex.graphs.cfg.CFEdge;
 import ghaffarian.progex.graphs.cfg.CFNode;
@@ -17,6 +16,7 @@ import ghaffarian.nanologger.Logger;
 import ghaffarian.progex.graphs.AbstractProgramGraph;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * Data Dependence Graph.
@@ -73,8 +73,8 @@ public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
 		try (PrintWriter dot = new PrintWriter(filepath, "UTF-8")) {
 			dot.println("digraph " + filename + "_PDG_DATA {");
             dot.println("  // graph-vertices");
-			Map<CFNode, String> ctrlNodes = new HashMap<>();
-			Map<PDNode, String> dataNodes = new HashMap<>();
+			Map<CFNode, String> ctrlNodes = new LinkedHashMap<>();
+			Map<PDNode, String> dataNodes = new LinkedHashMap<>();
 			int nodeCounter = 1;
             Iterator<CFNode> cfNodes = cfg.allVerticesIterator();
 			while (cfNodes.hasNext()) {
@@ -116,7 +116,76 @@ public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
 	
     @Override
     public void exportGML(String outDir) throws IOException {
-        throw new UnsupportedOperationException("DDG export to GML not implemented yet!");
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
+		String filename = fileName.substring(0, fileName.indexOf('.'));
+		String filepath = outDir + filename + "-PDG-DATA.gml";
+		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
+			gml.println("graph [");
+			gml.println("  directed 1");
+			gml.println("  multigraph 1");
+			for (Map.Entry<String, String> property: properties.entrySet()) {
+                switch (property.getKey()) {
+                    case "directed":
+                        continue;
+                    default:
+                        gml.println("  " + property.getKey() + " \"" + property.getValue() + "\"");
+                }
+            }
+            gml.println("  file \"" + this.fileName + "\"\n");
+            //
+			Map<CFNode, Integer> ctrlNodes = new LinkedHashMap<>();
+			Map<PDNode, Integer> dataNodes = new LinkedHashMap<>();
+            Iterator<CFNode> cfNodes = cfg.allVerticesIterator();
+			int nodeCounter = 0;
+			while (cfNodes.hasNext()) {
+                CFNode node = cfNodes.next();
+				gml.println("  node [");
+				gml.println("    id " + nodeCounter);
+				gml.println("    line " + node.getLineOfCode());
+				gml.println("    label \"" + StringUtils.escape(node.getCode()) + "\"");
+				PDNode pdNode = (PDNode) node.getProperty("pdnode");
+				if (pdNode != null) {
+					dataNodes.put(pdNode, nodeCounter);
+					gml.println("    defs " + StringUtils.toGmlArray(pdNode.getAllDEFs(), "var"));
+					gml.println("    uses " + StringUtils.toGmlArray(pdNode.getAllUSEs(), "var"));
+				}
+				gml.println("  ]");
+                ctrlNodes.put(node, nodeCounter);
+				++nodeCounter;
+			}
+            gml.println();
+            //
+			int edgeCounter = 0;
+            Iterator<Edge<CFNode, CFEdge>> cfEdges = cfg.allEdgesIterator();
+			while (cfEdges.hasNext()) {
+                Edge<CFNode, CFEdge> ctrlEdge = cfEdges.next();
+				gml.println("  edge [");
+				gml.println("    id " + edgeCounter);
+				gml.println("    source " + ctrlNodes.get(ctrlEdge.source));
+				gml.println("    target " + ctrlNodes.get(ctrlEdge.target));
+				gml.println("    type \"Control\",");
+				gml.println("    label \"" + ctrlEdge.label.type + "\"");
+                gml.println("  ]");
+				++edgeCounter;
+			}
+			for (Edge<PDNode, DDEdge> dataEdge: allEdges) {
+				gml.println("  edge [");
+				gml.println("    id " + edgeCounter);
+				gml.println("    source " + dataNodes.get(dataEdge.source));
+				gml.println("    target " + dataNodes.get(dataEdge.target));
+				gml.println("    type \"" + dataEdge.label.type + "\"");
+				gml.println("    label \"" + dataEdge.label.var + "\"");
+				gml.println("  ]");
+				++edgeCounter;
+			}
+			gml.println("]");
+		} catch (UnsupportedEncodingException ex) {
+			Logger.error(ex);
+		}
+		Logger.info("DDS of PDG exported to: " + filepath);
     }
 
     @Override
@@ -141,8 +210,8 @@ public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
 			json.println("  \"file\": \"" + fileName + "\",\n");
             //
 			json.println("  \"nodes\": [");
-			Map<CFNode, Integer> ctrlNodes = new HashMap<>();
-			Map<PDNode, Integer> dataNodes = new HashMap<>();
+			Map<CFNode, Integer> ctrlNodes = new LinkedHashMap<>();
+			Map<PDNode, Integer> dataNodes = new LinkedHashMap<>();
             Iterator<CFNode> cfNodes = cfg.allVerticesIterator();
 			int nodeCounter = 0;
 			while (cfNodes.hasNext()) {

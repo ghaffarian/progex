@@ -99,18 +99,18 @@ public class BasicAnalysisTests {
         assertEquals(testFiles.length, outFiles.length);
     }
     
-//    @Test
-//    public void javaPDGGmlTest() {
-//        String outDir = OUTPUT_DIR + "PDG/";
-//        String[] args = {"-pdg", "-outdir", outDir, "-format", "gml", JAVA_SRC_DIR};
-//        Main.main(args);
-//        //
-//        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
-//        String[] outDataFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-PDG-DATA.gml");
-//        String[] outCtrlFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-PDG-CTRL.gml");
-//        assertEquals(testFiles.length, outDataFiles.length);
-//        assertEquals(testFiles.length, outCtrlFiles.length);
-//    }
+    @Test
+    public void javaPDGGmlTest() {
+        String outDir = OUTPUT_DIR + "PDG/";
+        String[] args = {"-pdg", "-outdir", outDir, "-format", "gml", JAVA_SRC_DIR};
+        Main.main(args);
+        //
+        String[] testFiles = FileUtils.listFilesWithSuffix(new String[] {JAVA_SRC_DIR}, Execution.Languages.JAVA.suffix);
+        String[] outDataFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-PDG-DATA.gml");
+        String[] outCtrlFiles = FileUtils.listFilesWithSuffix(new String[] {outDir}, "-PDG-CTRL.gml");
+        assertEquals(testFiles.length, outDataFiles.length);
+        assertEquals(testFiles.length, outCtrlFiles.length);
+    }
     
     @Test
     public void javaASTreeJsonTest() {

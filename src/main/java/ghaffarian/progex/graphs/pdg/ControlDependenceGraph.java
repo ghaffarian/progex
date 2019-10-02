@@ -70,7 +70,53 @@ public class ControlDependenceGraph extends AbstractProgramGraph<PDNode, CDEdge>
 
     @Override
     public void exportGML(String outDir) throws IOException {
-        throw new UnsupportedOperationException("CDG export to GML not implemented yet!");
+        if (!outDir.endsWith(File.separator))
+            outDir += File.separator;
+        File outDirFile = new File(outDir);
+        outDirFile.mkdirs();
+		String filename = fileName.substring(0, fileName.indexOf('.'));
+		String filepath = outDir + filename + "-PDG-CTRL.gml";
+		try (PrintWriter gml = new PrintWriter(filepath, "UTF-8")) {
+			gml.println("graph [");
+			gml.println("  directed 1");
+			for (Entry<String, String> property: properties.entrySet()) {
+                switch (property.getKey()) {
+                    case "directed":
+                        continue;
+                    default:
+                        gml.println("  " + property.getKey() + " \"" + property.getValue() + "\"");
+                }
+            }
+            gml.println("  file \"" + this.fileName + "\"\n");
+            //
+			Map<PDNode, Integer> nodeIDs = new LinkedHashMap<>();
+			int nodeCounter = 0;
+			for (PDNode node: allVertices) {
+				gml.println("  node [");
+				gml.println("    id " + nodeCounter);
+				gml.println("    line " + node.getLineOfCode());
+				gml.println("    label \"" + StringUtils.escape(node.getCode()) + "\"");
+				gml.println("  ]");
+				nodeIDs.put(node, nodeCounter);
+				++nodeCounter;
+			}
+            gml.println();
+            //
+			int edgeCounter = 0;
+			for (Edge<PDNode, CDEdge> edge: allEdges) {
+				gml.println("  edge [");
+				gml.println("    id " + edgeCounter);
+				gml.println("    source " + nodeIDs.get(edge.source));
+				gml.println("    target " + nodeIDs.get(edge.target));
+				gml.println("    label \"" + edge.label.type + "\"");
+				gml.println("  ]");
+				++edgeCounter;
+			}
+			gml.println("]");
+		} catch (UnsupportedEncodingException ex) {
+			Logger.error(ex);
+		}
+		Logger.info("CDS of PDG exported to: " + filepath);
     }
 	
     @Override
