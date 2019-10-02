@@ -153,6 +153,7 @@ public class ControlFlowGraph extends AbstractProgramGraph<CFNode, CFEdge> {
 		String filepath = outDir + filename + "-CFG.json";
 		try (PrintWriter json = new PrintWriter(filepath, "UTF-8")) {
 			json.println("{\n  \"directed\": true,");
+			json.println("  \"multigraph\": true,");
 			for (Entry<String, String> property: properties.entrySet()) {
                 switch (property.getKey()) {
                     case "directed":
