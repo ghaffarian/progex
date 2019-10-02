@@ -160,14 +160,14 @@ public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
                     json.println("      \"label\": \"" + StringUtils.escape(node.getCode()) + "\"");
 				ctrlNodes.put(node, nodeCounter);
 				++nodeCounter;
-                if (nodeCounter == allVertices.size())
+                if (nodeCounter == cfg.vertexCount())
                     json.println("    }");
                 else
                     json.println("    },");
 			}
             //
 			json.println("  ],\n\n  \"edges\": [");
-			int edgeCounter = 1;
+			int edgeCounter = 0;
             Iterator<Edge<CFNode, CFEdge>> cfEdges = cfg.allEdgesIterator();
 			while (cfEdges.hasNext()) {
                 Edge<CFNode, CFEdge> ctrlEdge = cfEdges.next();
@@ -188,7 +188,7 @@ public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
 				json.println("      \"type\": \"" + dataEdge.label.type + "\",");
 				json.println("      \"label\": \"" + dataEdge.label.var + "\"");
 				++edgeCounter;
-                if (edgeCounter == allEdges.size())
+                if (edgeCounter == cfg.edgeCount() + allEdges.size())
                     json.println("    }");
                 else
                     json.println("    },");
