@@ -14,11 +14,14 @@ import org.junit.*;
  */
 public class JulietAnalysisTests {
 
-    private final String JAVA_SRC_DIR = "src/test/resources/java/juliet-v1.3/";
+    private static final String JAVA_SRC_DIR = "src/test/resources/java/juliet-v1.3/";
     private static final String OUTPUT_DIR = "out/java/juliet/";
     
     @BeforeClass
     public static void cleanUp() {
+        // Skip all Juliet-benchmark tests if the input directory doesn't exist
+        Assume.assumeTrue(new File(JAVA_SRC_DIR).exists());
+        
         File out = new File(OUTPUT_DIR);
         if (out.exists()) {
             for (File file : out.listFiles()) {
