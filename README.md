@@ -8,7 +8,10 @@ PROGEX is written in [Java](https://en.wikipedia.org/wiki/Java_(programming_lang
 based on the [ANTLR parser generator](http://www.antlr.org).
 
 PROGEX reads program source code files as input, and is able to generate various graphical program representations 
-and export them into well-known file formats for graphs; such as [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) and [JSON](https://en.wikipedia.org/wiki/JSON).
+and export them into well-known file formats for graphs; such as 
+[DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)),
+[GML](https://en.wikipedia.org/wiki/Graph_Modelling_Language) and
+[JSON](https://en.wikipedia.org/wiki/JSON).
 
 The structure of this repository is a Maven project.
 If you are interested in contributing to this project, 
@@ -22,33 +25,34 @@ as a sub-project of the PhD thesis of [Seyed Mohammad Ghaffarian](http://linkedi
 
 There are key aspects about PROGEX which makes it different and relevant in the presence of other 
 well-known program analysis frameworks (such as [SOOT](https://sable.github.io/soot/), [Chord](http://www.cis.upenn.edu/~mhnaik/chord.html), [Spoon](http://spoon.gforge.inria.fr/), etc.):
- * PROGEX is designed to operate at the source code level (or more precisely, at Abstract Syntax Tree 
-   (AST) level); not any other intermediate code or machine code level. To the best of our knowledge, 
-   all the above-mentioned frameworks operate at byte-code level. To explain the benefits of analysis 
-   at this level, we provide the following quote:
 
-   > Control-flow and data-flow analyses are key elements in many static analyses, and useful for a 
-   > variety of purposes, e.g. code optimization, refactoring, enforcing coding conventions, bug 
-   > detection, and metrics. Often, such analyses are carried out on a normalized intermediate code 
-   > representation, rather than on the abstract syntax tree (AST). This simplifies the computations 
-   > by not having to deal with the full source language. However, doing these analyses directly at 
-   > the AST level can be beneficial, since the high-level abstractions are not compiled away during 
-   > the translation to intermediate code. This is particularly important for tools that are integrated 
-   > in interactive development environments, such as refactoring tools and tools supporting bug 
-   > detection and coding convention violations.
-   >
-   > -- <cite>[Extensible Intraprocedural Flow Analysis at the Abstract Syntax Tree Level](http://www.sciencedirect.com/science/article/pii/S0167642312000172)</cite>
+* PROGEX is designed to operate at the source code level (or more precisely, at Abstract Syntax Tree 
+  (AST) level); not any other intermediate code or machine code level. To the best of our knowledge, 
+  all the above-mentioned frameworks operate at byte-code level. To explain the benefits of analysis 
+  at this level, we provide the following quote:
 
- * PROGEX is not a general-purpose program analysis, transformation, or rewriting framework. In contrast, 
-   it is only focused on the task of extracting well-known graphical program representations, and the 
-   ability to export them in well-known formats for further analysis by external programs. While all the 
-   above-mentioned frameworks are able to extract well-known graphical program representations, they are 
-   only internally usable, and none provide convenient mechanisms for exporting these graphs and making 
-   them available to external programs.
- * While the current state of PROGEX only supports the Java programming language, there is no limitation 
-   to support other programming languages. Any programming language that can be parsed using the ANTLR 
-   parser generator, can be supported by PROGEX. This virtually means all programming languages can be 
-   supported!
+  > Control-flow and data-flow analyses are key elements in many static analyses, and useful for a 
+  > variety of purposes, e.g. code optimization, refactoring, enforcing coding conventions, bug 
+  > detection, and metrics. Often, such analyses are carried out on a normalized intermediate code 
+  > representation, rather than on the abstract syntax tree (AST). This simplifies the computations 
+  > by not having to deal with the full source language. However, doing these analyses directly at 
+  > the AST level can be beneficial, since the high-level abstractions are not compiled away during 
+  > the translation to intermediate code. This is particularly important for tools that are integrated 
+  > in interactive development environments, such as refactoring tools and tools supporting bug 
+  > detection and coding convention violations.
+  >
+  > -- <cite>[Extensible Intraprocedural Flow Analysis at the Abstract Syntax Tree Level](http://www.sciencedirect.com/science/article/pii/S0167642312000172)</cite>
+
+* PROGEX is not a general-purpose program analysis, transformation, or rewriting framework. In contrast, 
+  it is only focused on the task of extracting well-known graphical program representations, and the 
+  ability to export them in well-known formats for further analysis by external programs. While all the 
+  above-mentioned frameworks are able to extract well-known graphical program representations, they are 
+  only internally usable, and none provide convenient mechanisms for exporting these graphs and making 
+  them available to external programs.
+* While the current state of PROGEX only supports the Java programming language, there is no limitation 
+  to support other programming languages. Any programming language that can be parsed using the ANTLR 
+  parser generator, can be supported by PROGEX. This virtually means all programming languages can be 
+  supported!
 
 After doing many searches online, we were unable to find any suitable tool with the above-mentioned properties. 
 Since such a tool was a requirement for our research projects, hence we developed PROGEX.
@@ -66,7 +70,7 @@ OPTIONS:
 
    -help      Print this help message
    -outdir    Specify path of output directory
-   -format    Specify output format; either 'JSON' or 'DOT'
+   -format    Specify output format; either 'DOT', 'GML' or 'JSON'
    -lang      Specify language of program source codes
 
    -ast       Perform AST (Abstract Syntax Tree) analysis
@@ -157,7 +161,27 @@ An alternative way is to create an image file. This can be done as follows:
 While `xdot` is a fine program and fulfills many basic requirements, it has some limitations.
 PROGVIZ is a related project by the developers of PROGEX, which aims to overcome some of xdot's 
 limitations and provide an improved modern graph visualization tool for program analysis applications.
-This tool is still under active development and supports both the DOT and JSON output formats of PROGEX.
+This tool is still under active development and supports all output formats of PROGEX.
 For more information, refer to its dedicated GitHub repository:
 
 **https://github.com/ghaffarian/progviz/**
+
+
+## Developer's Guide
+
+If you wish to build PROGEX from the source and start developing your own changes:
+
+#### Required Tools
+
+* Git (version 2.x)
+* Apache Maven (version 3.x)
+* Java Development Kit (JDK) version 8.0 or newer
+
+#### Steps (Linux terminal commands)
+
+1. `git clone https://github.com/ghaffarian/nanologger.git`
+2. `cd nanologger && mvn clean install && cd ..`
+3. `git clone https://github.com/ghaffarian/graphs.git`
+4. `cd graphs && mvn clean install && cd ..`
+5. `git clone https://github.com/ghaffarian/progex.git`
+6. `cd progex && mvn clean install`
