@@ -166,7 +166,7 @@ public class DataDependenceGraph extends AbstractProgramGraph<PDNode, DDEdge> {
 				gml.println("    id " + edgeCounter);
 				gml.println("    source " + ctrlNodes.get(ctrlEdge.source));
 				gml.println("    target " + ctrlNodes.get(ctrlEdge.target));
-				gml.println("    type \"Control\",");
+				gml.println("    type \"Control\"");
 				gml.println("    label \"" + ctrlEdge.label.type + "\"");
                 gml.println("  ]");
 				++edgeCounter;
