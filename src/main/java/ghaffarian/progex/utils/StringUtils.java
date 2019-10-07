@@ -24,12 +24,28 @@ public class StringUtils {
 		// Match and replace all string literals
 		//String escapedCode = code.replaceAll("\".*?\"", "STR");
 		String escapedCode = code.replaceAll("\"", "'");
+        escapedCode = escapedCode.replaceAll("\n", " ");
+        escapedCode = escapedCode.replaceAll("\r", " ");
 		// Match and replace all numeric literals
 		//escapedCode = escapedCode.replaceAll("\\b-?\\d+(.\\d+)*\\b", "$NUM");
 		// Match and escape all backslashes
 		escapedCode = escapedCode.replaceAll("\\\\", "\\\\\\\\");
-		return escapedCode;
+        //
+		return removeConsecutiveSpaces(escapedCode);
 	}
+    
+    /**
+     * Replaces all occurrences of 3 spaces with a single space.
+     * The resulting string will only have runs of at most two spaces.
+     */
+    public static String removeConsecutiveSpaces(String str) {
+        String before;
+        do {
+            before = str;
+            str = str.replace("   ", " ");
+        } while (!before.equals(str));
+        return str;
+    }
 	
 	/**
 	 * Returns a string which replaces all double-quotes (") chars with the escaped version (\").
