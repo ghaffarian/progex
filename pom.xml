@@ -6,7 +6,7 @@
 
   <groupId>ghaffarian</groupId>
   <artifactId>progex</artifactId>
-  <version>3.4.0</version>
+  <version>3.4.5</version>
 
   <name>PROGEX</name>
   <packaging>jar</packaging>
