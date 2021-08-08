@@ -1392,7 +1392,12 @@ public class JavaASTBuilder {
         @Override
         public String visitExpressionList(JavaParser.ExpressionListContext ctx) {
             // expressionList :  expression (',' expression)*
-            StringBuilder normalized = new StringBuilder(visit(ctx.expression(0)));
+	    String visitStr = visit(ctx.expression(0));
+            if(visitStr == null){
+                System.err.println("visit is "+ visitStr);
+                visitStr = "";
+            }
+            StringBuilder normalized = new StringBuilder(visitStr);
             for (int i = 1; i < ctx.expression().size(); ++i)
                 normalized.append(", ").append(visit(ctx.expression(i)));
             return normalized.toString();
